@@ -4,8 +4,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>fragargs-parent</artifactId>
-    <groupId>com.hannesdorfmann.fragargs</groupId>
-    <version>0.0.4</version>
+    <groupId>com.hannesdorfmann.fragmentargs</groupId>
+    <version>0.0.8</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>

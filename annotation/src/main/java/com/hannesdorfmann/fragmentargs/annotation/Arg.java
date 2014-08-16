@@ -1,4 +1,4 @@
-package com.hannesdorfmann.fragargs.annotation;
+package com.hannesdorfmann.fragmentargs.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

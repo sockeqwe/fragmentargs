@@ -1,6 +1,6 @@
-package com.hannesdorfmann.fragargs.processor;
+package com.hannesdorfmann.fragmentargs.processor;
 
-import com.hannesdorfmann.fragargs.annotation.Arg;
+import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
 import java.io.Serializable;
@@ -36,7 +36,7 @@ import javax.tools.JavaFileObject;
  *
  * @author Hannes Dorfmann
  */
-@SupportedAnnotationTypes("com.hannesdorfmann.fragargs.annotation.Arg")
+@SupportedAnnotationTypes("com.hannesdorfmann.fragmentargs.annotation.Arg")
 public class ArgProcessor extends AbstractProcessor {
 
   private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);

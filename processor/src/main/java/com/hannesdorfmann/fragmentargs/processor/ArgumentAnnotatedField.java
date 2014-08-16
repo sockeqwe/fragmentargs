@@ -1,6 +1,6 @@
-package com.hannesdorfmann.fragargs.processor;
+package com.hannesdorfmann.fragmentargs.processor;
 
-import com.hannesdorfmann.fragargs.annotation.Arg;
+import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import javax.lang.model.element.Element;
 
 public class ArgumentAnnotatedField extends AnnotatedField {

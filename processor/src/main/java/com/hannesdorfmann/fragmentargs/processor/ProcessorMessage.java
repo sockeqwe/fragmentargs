@@ -1,4 +1,4 @@
-package com.hannesdorfmann.fragargs.processor;
+package com.hannesdorfmann.fragmentargs.processor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
