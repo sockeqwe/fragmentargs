@@ -1,7 +1,7 @@
 package com.hannesdorfmann.fragmentargs.processor;
 
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
-import com.squareup.javawriter.JavaWriter;
+import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;

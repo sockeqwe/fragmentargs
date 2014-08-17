@@ -13,7 +13,7 @@
     <groupId>com.hannesdorfmann.fragmentargs</groupId>
     <artifactId>fragargs-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
     <modules>
         <module>annotation</module>
         <module>processor</module>
@@ -30,7 +30,6 @@
 
         <!-- Compilation -->
         <java.version>1.6</java.version>
-        <javawriter.version>2.5.0</javawriter.version>
 
         <!-- Test Dependencies -->
         <junit.version>4.10</junit.version>
@@ -59,11 +58,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.squareup</groupId>
-                <artifactId>javawriter</artifactId>
-                <version>${javawriter.version}</version>
-            </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>

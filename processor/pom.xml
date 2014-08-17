@@ -5,7 +5,7 @@
     <parent>
         <artifactId>fragargs-parent</artifactId>
         <groupId>com.hannesdorfmann.fragmentargs</groupId>
-        <version>0.0.8</version>
+        <version>0.0.9</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -24,10 +24,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>annotation</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>javawriter</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
