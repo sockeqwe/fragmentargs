@@ -5,7 +5,7 @@
   <parent>
     <artifactId>fragargs-parent</artifactId>
     <groupId>com.hannesdorfmann.fragmentargs</groupId>
-    <version>0.0.9</version>
+    <version>0.0.10</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -13,6 +13,12 @@
   <artifactId>annotation</artifactId>
 
   <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

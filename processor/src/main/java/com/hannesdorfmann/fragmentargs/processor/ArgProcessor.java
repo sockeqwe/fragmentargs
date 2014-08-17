@@ -1,9 +1,13 @@
 package com.hannesdorfmann.fragmentargs.processor;
 
+import com.hannesdorfmann.fragmentargs.FragmentArgInjector;
+import com.hannesdorfmann.fragmentargs.FragmentArgs;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -231,6 +235,9 @@ public class ArgProcessor extends AbstractProcessor {
       fields.add(element);
     }
 
+    // Store the key - value for the generated FragmentArtMap class
+    Map<String, String> autoMapping = new HashMap<String, String>();
+
     for (Map.Entry<TypeElement, Set<Element>> entry : fieldsByType.entrySet()) {
       try {
         String builder = entry.getKey().getSimpleName() + "Builder";
@@ -245,7 +252,11 @@ public class ArgProcessor extends AbstractProcessor {
           originating.add(element);
           superClass = element.getSuperclass();
         }
-        JavaFileObject jfo = filer.createSourceFile(entry.getKey().getQualifiedName() + "Builder",
+
+        String qualifiedFragmentName = entry.getKey().getQualifiedName().toString();
+        String qualifiedBuilderName = qualifiedFragmentName + "Builder";
+
+        JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName,
             originating.toArray(new Element[originating.size()]));
         Writer writer = jfo.openWriter();
         JavaWriter jw = new JavaWriter(writer);
@@ -292,6 +303,8 @@ public class ArgProcessor extends AbstractProcessor {
         writeBuildSubclassMethod(jw, entry.getKey());
         jw.endType();
         jw.close();
+
+        autoMapping.put(qualifiedFragmentName, qualifiedBuilderName);
       } catch (IOException e) {
         error(entry.getKey(), "Unable to write builder for type %s: %s", entry.getKey(),
             e.getMessage());
@@ -299,7 +312,60 @@ public class ArgProcessor extends AbstractProcessor {
       }
     }
 
+    // Write the automapping class
+    writeAutoMapping(autoMapping);
+
     return true;
+  }
+
+  /**
+   * Key is the fully qualified fragment name, value is the fully qualified Builder class name
+   */
+  private void writeAutoMapping(Map<String, String> mapping) {
+
+    try {
+      JavaFileObject jfo = filer.createSourceFile(FragmentArgs.AUTO_MAPPING_QUALIFIED_CLASS);
+      Writer writer = jfo.openWriter();
+      JavaWriter jw = new JavaWriter(writer);
+      // Package
+      jw.emitPackage(FragmentArgs.AUTO_MAPPING_PACKAGE);
+      // Imports
+      jw.emitImports("android.os.Bundle");
+
+      // Class
+      jw.beginType(FragmentArgs.AUTO_MAPPING_CLASS_NAME, "class",
+          EnumSet.of(Modifier.PUBLIC, Modifier.FINAL), null,
+          FragmentArgInjector.class.getCanonicalName());
+
+      // The mapping Method
+      jw.beginMethod("void", "inject", EnumSet.of(Modifier.PUBLIC), "String targetClass",
+          "Bundle bundle");
+
+      for (Map.Entry<String, String> entry : mapping.entrySet()) {
+
+        jw.emitEmptyLine();
+        jw.beginControlFlow("if ( %s.equals(targetClass) )", entry.getKey());
+        jw.emitStatement("%s.injectArguments(bundle);", entry.getValue());
+        jw.emitStatement("return;");
+        jw.endControlFlow();
+        jw.emitEmptyLine();
+
+      }
+
+      // End Mapping method
+      jw.endMethod();
+
+      jw.endType();
+      jw.close();
+    } catch (IOException e) {
+      error(null, "Unable to write the automapping class for builder to fragment: %s: %s",
+          FragmentArgs.AUTO_MAPPING_QUALIFIED_CLASS, e.getMessage());
+
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      throw new RuntimeException(sw.toString(), e);
+    }
   }
 
   private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element,
@@ -391,5 +457,4 @@ public class ArgProcessor extends AbstractProcessor {
   @Override public SourceVersion getSupportedSourceVersion() {
     return SourceVersion.RELEASE_6;
   }
-
 }
