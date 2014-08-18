@@ -1,7 +1,7 @@
 package com.hannesdorfmann.fragmentargs.processor;
 
-import com.hannesdorfmann.fragmentargs.FragmentArgInjector;
 import com.hannesdorfmann.fragmentargs.FragmentArgs;
+import com.hannesdorfmann.fragmentargs.FragmentArgsInjector;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
@@ -208,6 +208,8 @@ public class ArgProcessor extends AbstractProcessor {
         elementUtils.getTypeElement("android.support.v4.app.Fragment");
     Map<TypeElement, Set<Element>> fieldsByType = new HashMap<TypeElement, Set<Element>>(100);
 
+    Element[] origHelper = null;
+
     for (Element element : env.getElementsAnnotatedWith(Arg.class)) {
       TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -256,8 +258,9 @@ public class ArgProcessor extends AbstractProcessor {
         String qualifiedFragmentName = entry.getKey().getQualifiedName().toString();
         String qualifiedBuilderName = qualifiedFragmentName + "Builder";
 
-        JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName,
-            originating.toArray(new Element[originating.size()]));
+        Element[] orig = originating.toArray(new Element[originating.size()]);
+        origHelper = orig;
+        JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName, orig);
         Writer writer = jfo.openWriter();
         JavaWriter jw = new JavaWriter(writer);
         writePackage(jw, entry.getKey());
@@ -313,18 +316,20 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     // Write the automapping class
-    writeAutoMapping(autoMapping);
-
+    if (origHelper != null) {
+      writeAutoMapping(autoMapping, origHelper);
+    }
     return true;
   }
 
   /**
    * Key is the fully qualified fragment name, value is the fully qualified Builder class name
    */
-  private void writeAutoMapping(Map<String, String> mapping) {
+  private void writeAutoMapping(Map<String, String> mapping, Element[] element) {
 
     try {
-      JavaFileObject jfo = filer.createSourceFile(FragmentArgs.AUTO_MAPPING_QUALIFIED_CLASS);
+      JavaFileObject jfo =
+          filer.createSourceFile(FragmentArgs.AUTO_MAPPING_QUALIFIED_CLASS, element);
       Writer writer = jfo.openWriter();
       JavaWriter jw = new JavaWriter(writer);
       // Package
@@ -335,21 +340,23 @@ public class ArgProcessor extends AbstractProcessor {
       // Class
       jw.beginType(FragmentArgs.AUTO_MAPPING_CLASS_NAME, "class",
           EnumSet.of(Modifier.PUBLIC, Modifier.FINAL), null,
-          FragmentArgInjector.class.getCanonicalName());
+          FragmentArgsInjector.class.getCanonicalName());
 
+      jw.emitEmptyLine();
       // The mapping Method
-      jw.beginMethod("void", "inject", EnumSet.of(Modifier.PUBLIC), "String targetClass",
-          "Bundle bundle");
+      jw.beginMethod("void", "inject", EnumSet.of(Modifier.PUBLIC), "Object", "target");
+
+      jw.emitEmptyLine();
+      jw.emitStatement("Class<?> targetClass = target.getClass()");
+      jw.emitStatement("String targetName = targetClass.getCanonicalName()");
 
       for (Map.Entry<String, String> entry : mapping.entrySet()) {
 
         jw.emitEmptyLine();
-        jw.beginControlFlow("if ( %s.equals(targetClass) )", entry.getKey());
-        jw.emitStatement("%s.injectArguments(bundle);", entry.getValue());
-        jw.emitStatement("return;");
+        jw.beginControlFlow("if ( \"%s\".equals(targetName) )", entry.getKey());
+        jw.emitStatement("%s.injectArguments( ( %s ) target)", entry.getValue(), entry.getKey());
+        jw.emitStatement("return");
         jw.endControlFlow();
-        jw.emitEmptyLine();
-
       }
 
       // End Mapping method
