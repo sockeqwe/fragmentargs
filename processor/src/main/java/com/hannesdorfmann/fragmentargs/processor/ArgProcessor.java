@@ -408,7 +408,7 @@ public class ArgProcessor extends AbstractProcessor {
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
       Set<AnnotatedField> allArguments) throws IOException {
-    jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.STATIC, Modifier.FINAL),
+    jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         element.getSimpleName().toString(), "fragment");
 
     jw.emitStatement("Bundle args = fragment.getArguments()");
