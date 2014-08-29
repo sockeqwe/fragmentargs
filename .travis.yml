@@ -8,6 +8,7 @@ android:
 branches:
   except:
   - gh-pages
+  - travis
 notifications:
   email: false
 env:
@@ -15,4 +16,5 @@ env:
   - secure: RqaS73ZfOmR/OkT8BpHx5hK6KT/kC0qNhK6TOIy0ZMlkmbl5UGq3DtjTR3bT8rZohGoxSesXL11U2eG0eji5yXCsswYzZCWSeH8DMDrSDSHhvOoEWCFhylve1mLNe/0BXn8dMgB/84O5zoKUOTQ2M06Ix+NFQjowdqaGT/w0ecg=
   - secure: UWR+vREu8WbXeiuCYHXNAIH34Gh7XqCZjXqeqsxqtL31wRQ+6eEmwmBvrhOGY1Rp5Fp5YJd7yjXfgQe5iOKzG9FXO0+BItUuINoIduNZhFKRfb60UfLe4lGaZbgsUV06OIGQ74L+5cWZvWk4mSPdlepfPPMf2PiJCkvlBsxHmUU=
 
-script: "mvn deploy"
+before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
+script: "mvn deploy --settings target/travis/settings.xml"
