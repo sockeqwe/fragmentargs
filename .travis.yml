@@ -16,4 +16,4 @@ script: mvn deploy --settings target/travis/settings.xml
 env:
   global:
   - secure: ZLQy5m3kuPqAHxdmn4xGP4CsELLCQ0EF+Q+6wNnhvrkRrk8LLffsOAdqamA9GzOjq297f3MyhWaN+8yPutZBRM9+hetJuNLA8naMCrRDJew+xoMuVC8+srnLuG9Bo6fZAu++B/vXMJqLVAec17Yd/mxCIvZwZAO5TChAi8681Rg=
-  - secure: PKj+dErhZA9U9uby3Z1yqL6ThP5toKKqiTFlZXVI5QJb2RvVWJ9w6YlessZCAw68bAsAd/QHCk199slgL0iCB6AmeouR9cergj2F93lV+LNaPyfP32UcuTsPew9TZPUpGhRvcIYmlyQNdum4USL8/swkAYOV8f4p9R1GOimoahs=
+  - secure: NlSLSQX3hYfJrDyizw1TyjCDojV/HcUIbZj42S21obIcyWxCXCmKbiAjLVE9yoWOEm7PLKa+zPcmJOBb47Pl//D3KF4g+TilpD+/9Aqim3r7f3SMu9zpBO/3RZGH83+S0v2POkqv68vDeTbjVfVI6ocyTfd5CpWFEb28+AtrH34=
