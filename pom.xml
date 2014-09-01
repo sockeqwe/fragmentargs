@@ -13,14 +13,14 @@
   <groupId>com.hannesdorfmann.fragmentargs</groupId>
   <artifactId>fragmentargs-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.16</version>
+  <version>0.8.0</version>
   <modules>
     <module>annotation</module>
     <module>processor</module>
   </modules>
 
 
-  <name>fragargs-parent</name>
+  <name>fragmentargs-parent</name>
   <description>Generates Android Fragment Arguments</description>
   <url>https://github.com/sockeqwe/fragmentargs</url>
 

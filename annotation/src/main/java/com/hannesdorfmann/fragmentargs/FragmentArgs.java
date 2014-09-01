@@ -1,7 +1,5 @@
 package com.hannesdorfmann.fragmentargs;
 
-import android.app.Fragment;
-
 /**
  * @author Hannes Dorfmann
  */
@@ -14,14 +12,12 @@ public class FragmentArgs {
 
   private static FragmentArgsInjector autoMappingInjector;
 
-  public static void injectArguments(Fragment fragment) {
+  public static void inject(Object fragment) {
     injectFromBundle(fragment);
   }
 
-  // TODO support library
 
   static void injectFromBundle(Object target) {
-
 
     if (autoMappingInjector == null) {
       // Load the automapping class
