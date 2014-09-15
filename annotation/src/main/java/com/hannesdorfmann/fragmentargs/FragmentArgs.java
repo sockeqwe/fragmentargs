@@ -22,7 +22,6 @@ public class FragmentArgs {
     if (autoMappingInjector == null) {
       // Load the automapping class
       try {
-        System.out.println("The first time calls forName:");
         Class<?> c = Class.forName(AUTO_MAPPING_QUALIFIED_CLASS);
         autoMappingInjector = (FragmentArgsInjector) c.newInstance();
       } catch (Exception e) {
