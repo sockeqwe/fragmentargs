@@ -166,7 +166,7 @@ public class BaseFragment extends Fragment {
 }
 ```
 
-```
+```java
 public class MyFragment extends BaseFragment {
 
 	@Arg
