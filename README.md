@@ -8,8 +8,8 @@ To generate the Builder classes android annotation processor will be used. In gr
 
 ```
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.0'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.0'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.1'
+	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.1'
 }
 ```
 
