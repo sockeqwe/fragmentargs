@@ -1,6 +1,7 @@
 #FragmentArgs
-I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs/
 Annotation Processor to create arguments for android fragments without using reflections.
+
+I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs/
 
 #Dependency
 [Check GradlePlease to get the latest version number.](http://gradleplease.appspot.com/#com.hannesdorfmann.fragmentargs)
