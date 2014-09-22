@@ -8,7 +8,7 @@ I have written a blog entry about this library: http://hannesdorfmann.com/androi
 
 To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
 
-```
+```groovy
 dependencies {
 	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.1'
 	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.1'
