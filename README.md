@@ -6,12 +6,12 @@ I have written a blog entry about this library: http://hannesdorfmann.com/androi
 #Dependency
 [Check GradlePlease to get the latest version number.](http://gradleplease.appspot.com/#com.hannesdorfmann.fragmentargs)
 
-To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
+To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to use the gradle android plugin 0.8+.
 
 ```
 dependencies {
 	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.1'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.1'
+	provided 'com.hannesdorfmann.fragmentargs:processor:1.0.1'
 }
 ```
 
