@@ -4,14 +4,14 @@ Annotation Processor to create arguments for android fragments without using ref
 I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs/
 
 #Dependency
-[Check GradlePlease to get the latest version number.](http://gradleplease.appspot.com/#com.hannesdorfmann.fragmentargs)
+Check [GradlePlease](http://gradleplease.appspot.com/#com.hannesdorfmann.fragmentargs) to get the latest version number.
 
 To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.2'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.2'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.3'
+	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.3'
 }
 ```
 
