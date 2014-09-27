@@ -213,6 +213,7 @@ public class ArgProcessor extends AbstractProcessor {
     for (Element element : env.getElementsAnnotatedWith(Arg.class)) {
       TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
+      // Check if its a fragment
       if (!((fragmentType != null && typeUtils.isSubtype(enclosingElement.asType(),
           fragmentType.asType())) || (supportFragmentType != null && typeUtils.isSubtype(
           enclosingElement.asType(), supportFragmentType.asType())))) {
@@ -229,6 +230,7 @@ public class ArgProcessor extends AbstractProcessor {
             enclosingElement.getQualifiedName(), element);
         continue;
       }
+
       Set<Element> fields = fieldsByType.get(enclosingElement);
       if (fields == null) {
         fields = new LinkedHashSet<Element>(10);
@@ -242,6 +244,11 @@ public class ArgProcessor extends AbstractProcessor {
 
     for (Map.Entry<TypeElement, Set<Element>> entry : fieldsByType.entrySet()) {
       try {
+        // Skip abstract classes
+        if (entry.getKey().getModifiers().contains(Modifier.ABSTRACT)) {
+          continue;
+        }
+
         String builder = entry.getKey().getSimpleName() + "Builder";
         List<Element> originating = new ArrayList<Element>(10);
         originating.add(entry.getKey());
@@ -408,7 +415,8 @@ public class ArgProcessor extends AbstractProcessor {
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
       Set<AnnotatedField> allArguments) throws IOException {
-    jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
+    jw.beginMethod("void", "injectArguments",
+        EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         element.getSimpleName().toString(), "fragment");
 
     jw.emitStatement("Bundle args = fragment.getArguments()");
