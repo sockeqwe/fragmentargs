@@ -230,7 +230,8 @@ dependencies {
 }
 ```
 
-So the important thing is `fragmentArgsLibrary = true`
+So the important thing is `fragmentArgsLibrary = true`. Otherwise you will get an compile error like this
+`Multiple dex files define com/hannesdorfmann/fragmentargs/AutoFragmentArgInjector`  in your app project that uses FragmentArgs and your library (which uses FragmentArgs as well).
 
 Next you have to manually inject the FragmentArguments in your Fragment which is part of your library. So you **can not use** `FragmentArgs.inject()` but you have to use the generated FragmentBuilder class. Example:
 ```java 
@@ -250,6 +251,7 @@ public class FragmenInLib extends Fragment {
 }
 
 ``` 
+
 
 
 #Thanks
