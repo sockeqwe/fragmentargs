@@ -206,6 +206,51 @@ public class OtherFragment extends BaseFragment {
 #Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  
 
+# Using in library projects
+You can use FragmentArgs in library projects. However, in library project you have to inject the arguments by hand in each Fragment. First of all, you have to specify in your libraries `build.gradle` that FragmentArgs should treat this project as a library project by adding the following lines:
+
+```groovy
+apply plugin: 'com.android.library'
+apply plugin: 'com.neenbedankt.android-apt
+
+apt {
+  arguments {
+    fragmentArgsLibrary = true
+  }
+}
+
+android {
+  ...
+}
+
+dependencies {
+  compile 'com.hannesdorfmann.fragmentargs:annotation:x.x.x'
+  apt 'com.hannesdorfmann.fragmentargs:processor:x.x.x'
+  ...
+}
+```
+
+So the important thing is `fragmentArgsLibrary = true`
+
+Next you have to manually inject the FragmentArguments in your Fragment which is part of your library. So you **can not use** `FragmentArgs.inject()` but you have to use the generated FragmentBuilder class. Example:
+```java 
+public class FragmenInLib extends Fragment {
+
+  @Arg String foo;
+  @Arg int test;
+
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);        
+    
+    // Use the generated builder class to "inject" the arguments on creation
+    TestFragmentBuilder.injectArguments(this);
+  }
+
+}
+
+``` 
+
 
 #Thanks
 Many parts of the annotation code are based on Hugo Visser's [Bundle](https://bitbucket.org/hvisser/bundles) project. I have added some optimizations. 
