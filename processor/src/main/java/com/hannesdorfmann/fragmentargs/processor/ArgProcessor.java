@@ -203,6 +203,13 @@ public class ArgProcessor extends AbstractProcessor {
     Elements elementUtils = processingEnv.getElementUtils();
     Types typeUtils = processingEnv.getTypeUtils();
     Filer filer = processingEnv.getFiler();
+
+    boolean isLibrary = false;
+    String fragementArgsLib = processingEnv.getOptions().get("fragmentArgsLib");
+    if (fragementArgsLib != null && fragementArgsLib.equalsIgnoreCase("true")) {
+      isLibrary = true;
+    }
+
     TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
     TypeElement supportFragmentType =
         elementUtils.getTypeElement("android.support.v4.app.Fragment");
@@ -323,7 +330,7 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     // Write the automapping class
-    if (origHelper != null) {
+    if (origHelper != null && !isLibrary) {
       writeAutoMapping(autoMapping, origHelper);
     }
     return true;

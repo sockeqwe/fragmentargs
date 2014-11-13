@@ -13,7 +13,7 @@
   <groupId>com.hannesdorfmann.fragmentargs</groupId>
   <artifactId>fragmentargs-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.1.0-RC1</version>
   <modules>
     <module>annotation</module>
     <module>processor</module>
@@ -215,6 +215,11 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.1</version>
+      </plugin>
 
     </plugins>
   </build>

@@ -15,6 +15,7 @@ pom.xml.*
 release.properties
 log
 settings.xml
+*.versionsBackup
 
 .idea
 *.iml
