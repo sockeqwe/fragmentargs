@@ -211,7 +211,7 @@ You can use FragmentArgs in library projects. However, in library project you ha
 
 ```groovy
 apply plugin: 'com.android.library'
-apply plugin: 'com.neenbedankt.android-apt
+apply plugin: 'com.neenbedankt.android-apt'
 
 apt {
   arguments {
