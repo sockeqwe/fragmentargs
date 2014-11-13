@@ -245,7 +245,7 @@ public class FragmenInLib extends Fragment {
     super.onCreate(savedInstanceState);        
     
     // Use the generated builder class to "inject" the arguments on creation
-    TestFragmentBuilder.injectArguments(this);
+    FragmenInLibBuilder.injectArguments(this);
   }
 
 }
