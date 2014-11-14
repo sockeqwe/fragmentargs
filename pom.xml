@@ -13,7 +13,7 @@
   <groupId>com.hannesdorfmann.fragmentargs</groupId>
   <artifactId>fragmentargs-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.1.0-RC1</version>
+  <version>1.1.0</version>
   <modules>
     <module>annotation</module>
     <module>processor</module>

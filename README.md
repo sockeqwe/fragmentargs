@@ -10,10 +10,13 @@ To generate the Builder classes android annotation processor will be used. In gr
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.3'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.0.3'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:1.1.0'
+	apt 'com.hannesdorfmann.fragmentargs:processor:1.1.0'
 }
 ```
+
+# Changelog
+The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/master/CHANGELOG.md)
 
 #How to use
 FragmentArgs generates java code at compile time. It generates a `Builder` class out of your Fragment class.
@@ -213,9 +216,10 @@ You can use FragmentArgs in library projects. However, in library project you ha
 apply plugin: 'com.android.library'
 apply plugin: 'com.neenbedankt.android-apt'
 
+// Options for annotation processor
 apt {
   arguments {
-    fragmentArgsLibrary = true
+    fragmentArgsLib = true
   }
 }
 
@@ -230,10 +234,10 @@ dependencies {
 }
 ```
 
-So the important thing is `fragmentArgsLibrary = true`. Otherwise you will get an compile error like this
+So the important thing is `fragmentArgsLib = true`. Otherwise you will get an compile error like this
 `Multiple dex files define com/hannesdorfmann/fragmentargs/AutoFragmentArgInjector`  in your app project that uses FragmentArgs and your library (which uses FragmentArgs as well).
 
-Next you have to manually inject the FragmentArguments in your Fragment which is part of your library. So you **can not use** `FragmentArgs.inject()` but you have to use the generated FragmentBuilder class. Example:
+Next you have to manually inject the FragmentArguments in your Fragment which is part of your library. So you **can not use** `FragmentArgs.inject()` but you have to use explicit the generated FragmentBuilder class. Example:
 ```java 
 public class FragmenInLib extends Fragment {
 
