@@ -251,7 +251,8 @@ public class ArgProcessor extends AbstractProcessor {
 
     for (Map.Entry<TypeElement, Set<Element>> entry : fieldsByType.entrySet()) {
       try {
-        // Skip abstract classes
+
+        // Don't generate Builder and AutoInjector for abstract classes
         if (entry.getKey().getModifiers().contains(Modifier.ABSTRACT)) {
           continue;
         }
