@@ -156,7 +156,7 @@ As you have seen optional fragment arguments are part of the `Builder` class as 
 Like you have seen from the example above fields named with "m" prefix will be automatically cut by making the method name the substring of the original fields name without the "m" prefix. For example the field `int mFeatureId` corresponds to the builders method `featureId(int)`
 
 ## Inheritance - Best practice
-Wouldn't it be painful to overide `onCreate(Bundle)` in every Fragment of your app just to insert `FragmentArgs.inject(this)`.
+Wouldn't it be painful to override `onCreate(Bundle)` in every Fragment of your app just to insert `FragmentArgs.inject(this)`.
 FragmentArgs are designed to support inheritance. Hence you can override once `onCreate(Bundle)` in your Fragment base class and do not need to override this for every single Fragment.
 
 For example:
@@ -204,7 +204,7 @@ public class OtherFragment extends BaseFragment {
       }
 }
 ```
-
+`FragmentArgs also supports inheritance and abstract classes. That means, that annotated fields of the supper class will be part of the builder of the subclass.
 
 #Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  
