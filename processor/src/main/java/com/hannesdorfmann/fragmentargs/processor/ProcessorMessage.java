@@ -5,7 +5,7 @@ import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 
 /**
- * This is a simple static helper class to print error, waring or note messages during annotation
+ * This is a simple static helper class to print error, waring or warn messages during annotation
  * processing.
  * <p>
  * You <b>must</b> initialize this class by calling {@link #init(ProcessingEnvironment)}

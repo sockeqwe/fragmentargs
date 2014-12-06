@@ -172,6 +172,7 @@ public class ArgProcessor extends AbstractProcessor {
   private Set<AnnotatedField> collectArgumentsForType(Types typeUtil, TypeElement type,
       Map<TypeElement, Set<Element>> fieldsByType, boolean requiredOnly,
       boolean processSuperClass) {
+
     Set<AnnotatedField> arguments = new TreeSet<AnnotatedField>();
     if (processSuperClass) {
       TypeMirror superClass = type.getSuperclass();
@@ -192,7 +193,27 @@ public class ArgProcessor extends AbstractProcessor {
           continue;
         }
       }
-      arguments.add(new ArgumentAnnotatedField(element));
+      ArgumentAnnotatedField annotatedField = new ArgumentAnnotatedField(element);
+      if (arguments.contains(annotatedField)) {
+        // For better error message search for the annotated field in superclass
+
+        AnnotatedField superClassField = null;
+        for (AnnotatedField f : arguments) {
+          if (f.compareTo(annotatedField) == 0) { // comparison by name (TreeSet uses compareTo)
+            superClassField = f;
+            break;
+          }
+        }
+
+       TypeElement superClass = (TypeElement) superClassField.getElement().getEnclosingElement();
+       TypeElement currentClass = (TypeElement) element.getEnclosingElement();
+
+        error(element,
+            "A field with the name '%s' in class %s is already annotated with @%s in super class %s. The field name must be unique within inheritance hierarchy.",
+            element.getSimpleName().toString(), currentClass.getQualifiedName().toString(), Arg.class.getSimpleName(),
+            superClass.getQualifiedName().toString());
+      }
+      arguments.add(annotatedField);
     }
     return arguments;
   }
@@ -290,6 +311,7 @@ public class ArgProcessor extends AbstractProcessor {
 
         String[] args = new String[required.size() * 2];
         int index = 0;
+
         for (AnnotatedField arg : required) {
           args[index++] = arg.getType();
           args[index++] = arg.getVariableName();
@@ -316,7 +338,7 @@ public class ArgProcessor extends AbstractProcessor {
         }
 
         writeInjectMethod(jw, entry.getKey(),
-            collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, false, false));
+            collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, false, true));
         writeBuildMethod(jw, entry.getKey());
         writeBuildSubclassMethod(jw, entry.getKey());
         jw.endType();
@@ -475,6 +497,13 @@ public class ArgProcessor extends AbstractProcessor {
       message = String.format(message, args);
     }
     processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message, element);
+  }
+
+  public void warn(Element element, String message, Object... args) {
+    if (args.length > 0) {
+      message = String.format(message, args);
+    }
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
   }
 
   @Override public SourceVersion getSupportedSourceVersion() {

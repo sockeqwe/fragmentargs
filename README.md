@@ -10,8 +10,8 @@ To generate the Builder classes android annotation processor will be used. In gr
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:1.1.0'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.1.0'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:1.2.0'
+	apt 'com.hannesdorfmann.fragmentargs:processor:1.2.0'
 }
 ```
 

@@ -1,3 +1,6 @@
+#1.2.0 (12/06/2014)
+Better support for inheritance and abstract classes
+
 #1.1.0 (11/14/2014)
 Support for Android libraries to avoid errors where the auto injector class is generated multiple times which will cause this error
 `Multiple dex files define com/hannesdorfmann/fragmentargs/AutoFragmentArgInjector`
