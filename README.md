@@ -204,7 +204,7 @@ public class OtherFragment extends BaseFragment {
       }
 }
 ```
-`FragmentArgs also supports inheritance and abstract classes. That means, that annotated fields of the supper class will be part of the builder of the subclass.
+`FragmentArgs` also supports inheritance and abstract classes. That means that annotated fields of the supper class are part of the builder of the subclass.
 
 #Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  
