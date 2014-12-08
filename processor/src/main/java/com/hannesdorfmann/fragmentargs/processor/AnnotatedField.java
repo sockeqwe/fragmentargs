@@ -1,6 +1,7 @@
 package com.hannesdorfmann.fragmentargs.processor;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 abstract class AnnotatedField implements Comparable<AnnotatedField> {
   private final String name;
@@ -8,13 +9,19 @@ abstract class AnnotatedField implements Comparable<AnnotatedField> {
   private final String type;
   private final Element element;
   private final boolean required;
+  private final TypeElement classElement;
 
-  public AnnotatedField(Element element, boolean required, String key) {
+  public AnnotatedField(Element element, TypeElement classElement, boolean required, String key) {
     this.name = element.getSimpleName().toString();
     this.key = key;
     this.type = element.asType().toString();
     this.element = element;
     this.required = required;
+    this.classElement = classElement;
+  }
+
+  public TypeElement getClassElement() {
+    return classElement;
   }
 
   public String getVariableName() {
@@ -51,27 +58,20 @@ abstract class AnnotatedField implements Comparable<AnnotatedField> {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((key == null) ? 0 : key.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    return result;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof AnnotatedField)) return false;
+
+    AnnotatedField that = (AnnotatedField) o;
+
+    if (!name.equals(that.name)) return false;
+
+    return true;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    AnnotatedField other = (AnnotatedField) obj;
-    if (key == null) {
-      if (other.key != null) return false;
-    } else if (!key.equals(other.key)) return false;
-    if (type == null) {
-      if (other.type != null) return false;
-    } else if (!type.equals(other.type)) return false;
-    return true;
+  public int hashCode() {
+    return name.hashCode();
   }
 
   @Override

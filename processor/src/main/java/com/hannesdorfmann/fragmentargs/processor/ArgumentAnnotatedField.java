@@ -2,11 +2,12 @@ package com.hannesdorfmann.fragmentargs.processor;
 
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 public class ArgumentAnnotatedField extends AnnotatedField {
 
-  public ArgumentAnnotatedField(Element element) {
-    super(element, isRequired(element), getKey(element));
+  public ArgumentAnnotatedField(Element element, TypeElement classElement) {
+    super(element, classElement, isRequired(element), getKey(element));
   }
 
   private static String getKey(Element element) {

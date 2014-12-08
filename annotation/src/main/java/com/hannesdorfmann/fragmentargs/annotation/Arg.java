@@ -7,8 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotated every class that can be parsed from json or can be written as json
- * with this annotation. You can also specify config for this
+ * Annotated every field that should be a fragment argument with this annotation
  *
  * @author Hannes Dorfmann
  */
