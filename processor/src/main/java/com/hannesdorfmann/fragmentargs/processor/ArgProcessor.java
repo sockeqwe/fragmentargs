@@ -179,16 +179,34 @@ public class ArgProcessor extends AbstractProcessor {
   private AnnotatedFragment getAllInclSuperClasses(TypeElement type) throws ProcessingException {
 
     AnnotatedFragment fragment = new AnnotatedFragment(type);
+    TypeElement currentClass = type;
+    do {
 
-    for (Element e : elementUtils.getAllMembers(type)) {
+      for (Element e : currentClass.getEnclosedElements()) {
+        if (e.getKind() != ElementKind.FIELD){
+          continue;
+        }
 
-      Arg annotation = null;
-      if ((annotation = e.getAnnotation(Arg.class)) != null) {
-        ArgumentAnnotatedField annotatedField =
-            new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement());
-        addAnnotatedField(annotatedField, fragment, annotation);
+        // It's a field
+        Arg annotation = null;
+        if ((annotation = e.getAnnotation(Arg.class)) != null) {
+          ArgumentAnnotatedField annotatedField = new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement());
+
+          warn(e, "Found %s", e.getSimpleName().toString());
+          addAnnotatedField(annotatedField, fragment, annotation);
+        }
       }
-    }
+
+      TypeMirror superClassType = currentClass.getSuperclass();
+      if (superClassType.getKind() == TypeKind.NONE) {
+        // Basis class (java.lang.Object) reached, so exit
+        currentClass = null;
+        break;
+      } else {
+        currentClass = (TypeElement) typeUtils.asElement(superClassType);
+      }
+
+    } while (currentClass != null);
 
     return fragment;
   }
@@ -243,10 +261,10 @@ public class ArgProcessor extends AbstractProcessor {
       //  key for bundle is already in use
       AnnotatedField otherField = fragment.containsBundleKey(annotatedField);
       error(annotatedField.getElement(),
-          "The key bundle key '%s' for field %s in %s is already used by another argument int %s",
+          "The key bundle key '%s' for field %s in %s is already used by another argument in %s (field name is '%s')",
           annotatedField.getKey(), annotatedField.getVariableName(),
           annotatedField.getClassElement().getQualifiedName().toString(),
-          otherField.getClassElement().getQualifiedName().toString());
+          otherField.getClassElement().getQualifiedName().toString(), otherField.getVariableName());
       throw new ProcessingException();
     } else {
       if (annotation.required()) {
@@ -261,6 +279,8 @@ public class ArgProcessor extends AbstractProcessor {
    * Collects the fields that are annotated by the fragmentarg
    */
   private AnnotatedFragment collectArgumentsForType(TypeElement type) throws ProcessingException {
+
+    warn(type, "Processing " + type.getSimpleName());
 
     boolean superClasses = true;
     InheritedFragmentArgs inheritedFragmentArgs = type.getAnnotation(InheritedFragmentArgs.class);
@@ -441,7 +461,6 @@ public class ArgProcessor extends AbstractProcessor {
       if (origHelper != null && !isLibrary) {
         writeAutoMapping(autoMapping, origHelper);
       }
-
     } catch (ProcessingException e) {
       // Nothing to do, has been printed previously to console
     }

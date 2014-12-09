@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * @author Hannes Dorfmann
  */
-@Target(ElementType.FIELD) @Retention(RetentionPolicy.CLASS) @Documented
+@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME) @Documented
 public @interface Arg {
 
   /**

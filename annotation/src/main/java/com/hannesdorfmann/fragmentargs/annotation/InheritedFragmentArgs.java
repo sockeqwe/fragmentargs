@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *
  * @author Hannes Dorfmann
  */
-@Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS) @Documented
+@Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @Documented
 public @interface InheritedFragmentArgs {
 
   /**

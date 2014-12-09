@@ -86,7 +86,7 @@ public class AnnotatedFragment {
   }
 
   public Set<AnnotatedField> getAll() {
-    Set<AnnotatedField> all =  new HashSet<AnnotatedField>(getRequiredFields());
+    Set<AnnotatedField> all = new HashSet<AnnotatedField>(getRequiredFields());
     all.addAll(getOptionalFields());
     return all;
   }
