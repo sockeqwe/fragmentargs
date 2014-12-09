@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -13,8 +14,8 @@ import javax.lang.model.element.TypeElement;
  */
 public class AnnotatedFragment {
 
-  private Set<AnnotatedField> requiredFields = new HashSet<AnnotatedField>();
-  private Set<AnnotatedField> optional = new HashSet<AnnotatedField>();
+  private Set<AnnotatedField> requiredFields = new TreeSet<AnnotatedField>();
+  private Set<AnnotatedField> optional = new TreeSet<AnnotatedField>();
   private Map<String, AnnotatedField> bundleKeyMap = new HashMap<String, AnnotatedField>();
   private TypeElement classElement;
 
