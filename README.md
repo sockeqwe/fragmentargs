@@ -10,8 +10,8 @@ To generate the Builder classes android annotation processor will be used. In gr
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:1.2.0'
-	apt 'com.hannesdorfmann.fragmentargs:processor:1.2.0'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:2.0.0'
+	apt 'com.hannesdorfmann.fragmentargs:processor:2.0.0'
 }
 ```
 
@@ -291,7 +291,5 @@ public class FragmenInLib extends Fragment {
 
 ``` 
 
-
-
 #Thanks
-Many parts of the annotation code are based on Hugo Visser's [Bundle](https://bitbucket.org/hvisser/bundles) project. I have added some optimizations. 
+Parts of the annotation code are based on Hugo Visser's [Bundle](https://bitbucket.org/hvisser/bundles) project. I have added some optimizations and improvements.
