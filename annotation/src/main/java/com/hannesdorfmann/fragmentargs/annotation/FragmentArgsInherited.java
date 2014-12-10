@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * @author Hannes Dorfmann
  */
 @Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS) @Documented
-public @interface InheritedFragmentArgs {
+public @interface FragmentArgsInherited {
 
   /**
    * Is inheritance hierarchy scanning enabled? default value = true

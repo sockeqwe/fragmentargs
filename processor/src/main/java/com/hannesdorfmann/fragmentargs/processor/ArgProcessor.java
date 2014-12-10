@@ -3,7 +3,7 @@ package com.hannesdorfmann.fragmentargs.processor;
 import com.hannesdorfmann.fragmentargs.FragmentArgs;
 import com.hannesdorfmann.fragmentargs.FragmentArgsInjector;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
-import com.hannesdorfmann.fragmentargs.annotation.InheritedFragmentArgs;
+import com.hannesdorfmann.fragmentargs.annotation.FragmentArgsInherited;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -339,7 +339,7 @@ public class ArgProcessor extends AbstractProcessor {
   private AnnotatedFragment collectArgumentsForType(TypeElement type) throws ProcessingException {
 
     boolean superClasses = true;
-    InheritedFragmentArgs inheritedFragmentArgs = type.getAnnotation(InheritedFragmentArgs.class);
+    FragmentArgsInherited inheritedFragmentArgs = type.getAnnotation(FragmentArgsInherited.class);
     if (inheritedFragmentArgs != null) {
       superClasses = inheritedFragmentArgs.value();
     }
@@ -411,11 +411,11 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     // Search for "just" @InheritedFragmentArgs
-    for (Element element : env.getElementsAnnotatedWith(InheritedFragmentArgs.class)) {
+    for (Element element : env.getElementsAnnotatedWith(FragmentArgsInherited.class)) {
 
       if (element.getKind() != ElementKind.CLASS) {
         error(element, "%s can only be applied on Fragment classes",
-            InheritedFragmentArgs.class.getSimpleName());
+            FragmentArgsInherited.class.getSimpleName());
         continue;
       }
 
@@ -424,7 +424,7 @@ public class ArgProcessor extends AbstractProcessor {
       // Check if its a fragment
       if (!isFragmentClass(element, fragmentType, supportFragmentType)) {
         error(element, "%s can only be used on fragments, but %s is not a subclass of fragment",
-            InheritedFragmentArgs.class.getSimpleName(), classElement.getQualifiedName());
+            FragmentArgsInherited.class.getSimpleName(), classElement.getQualifiedName());
         continue;
       }
       // Skip abstract classes
