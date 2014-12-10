@@ -218,7 +218,7 @@ public class ArgProcessor extends AbstractProcessor {
 
     String base =
         "A field with the name '%s' in class %s is already annotated with @%s in super class %s ! "
-            + "The fields name must be unique within inheritance hierarchy.";
+            + "Fields name must be unique within inheritance hierarchy.";
 
     // Assumption: The problemClass is already a super class of the real problem,
     // So determine the real problem by searching for the subclass that cause this problem
@@ -259,14 +259,10 @@ public class ArgProcessor extends AbstractProcessor {
     TypeMirror superClass = problemClass.getSuperclass();
     TypeElement superClassElement = null;
 
-    warn(problemClass, "Base: " + problemClass.getQualifiedName().toString());
-
-    // TODO remove
     if (superClass == null) {
-      error(null, "SuperClass is null");
       return String.format(
-          "A field with the name '%s' in class %s is already annotated with @%s in super class! "
-              + "The fields name must be unique within inheritance hierarchy.", fieldName,
+          "A field with the name '%s' in class %s is already annotated with @%s in a super class or sub class! "
+              + "Fields name must be unique within inheritance hierarchy.", fieldName,
           problemClass.getQualifiedName().toString(), Arg.class.getSimpleName());
     }
 
@@ -296,7 +292,7 @@ public class ArgProcessor extends AbstractProcessor {
       return String.format(
           "A field with the name '%s' in class %s is already annotated with @%s in a "
               + "super class or sub class of %s ! "
-              + "The fields name must be unique within inheritance hierarchy.", fieldName,
+              + "Fields name must be unique within inheritance hierarchy.", fieldName,
           problemClass.getQualifiedName().toString(), Arg.class.getSimpleName(),
           problemClass.getQualifiedName().toString());
     }
@@ -322,7 +318,8 @@ public class ArgProcessor extends AbstractProcessor {
       //  key for bundle is already in use
       AnnotatedField otherField = fragment.containsBundleKey(annotatedField);
       error(annotatedField.getElement(),
-          "The key bundle key '%s' for field %s in %s is already used by another argument in %s (field name is '%s')",
+          "The bundle key '%s' for field %s in %s is already used by another "
+              + "argument in %s (field name is '%s'). Bundle keys must be unique in inheritance hierarchy!",
           annotatedField.getKey(), annotatedField.getVariableName(),
           annotatedField.getClassElement().getQualifiedName().toString(),
           otherField.getClassElement().getQualifiedName().toString(), otherField.getVariableName());
