@@ -183,16 +183,15 @@ public class ArgProcessor extends AbstractProcessor {
     do {
 
       for (Element e : currentClass.getEnclosedElements()) {
-        if (e.getKind() != ElementKind.FIELD){
+        if (e.getKind() != ElementKind.FIELD) {
           continue;
         }
 
         // It's a field
         Arg annotation = null;
         if ((annotation = e.getAnnotation(Arg.class)) != null) {
-          ArgumentAnnotatedField annotatedField = new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement());
-
-          warn(e, "Found %s", e.getSimpleName().toString());
+          ArgumentAnnotatedField annotatedField =
+              new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement());
           addAnnotatedField(annotatedField, fragment, annotation);
         }
       }
@@ -205,7 +204,6 @@ public class ArgProcessor extends AbstractProcessor {
       } else {
         currentClass = (TypeElement) typeUtils.asElement(superClassType);
       }
-
     } while (currentClass != null);
 
     return fragment;
@@ -215,20 +213,73 @@ public class ArgProcessor extends AbstractProcessor {
    * Generates an error String with detailed information about that a field with the same name is
    * already defined in a super class
    */
-  private String getErrorMessageDuplicatedField(TypeElement baseClass, String fieldName) {
+  private String getErrorMessageDuplicatedField(AnnotatedFragment fragment,
+      TypeElement problemClass, String fieldName) {
 
     String base =
         "A field with the name '%s' in class %s is already annotated with @%s in super class %s ! "
             + "The fields name must be unique within inheritance hierarchy.";
 
-    // Find super class that contains the field
-    TypeMirror superClass = baseClass.getSuperclass();
+    // Assumption: The problemClass is already a super class of the real problem,
+    // So determine the real problem by searching for the subclass that cause this problem
+    TypeElement otherClass = null;
+    for (AnnotatedField otherField : fragment.getAll()) {
+      if (otherField.getVariableName().equals(fieldName)) {
+        otherClass = otherField.getClassElement();
+        break;
+      }
+    }
+
+    if (otherClass != null) {
+      // Check who is the super class
+      TypeElement currentClass = otherClass;
+
+      while (currentClass != null) {
+        TypeMirror currentClassSuperclass = currentClass.getSuperclass();
+        if (currentClassSuperclass == null || currentClassSuperclass.getKind() == TypeKind.NONE) {
+          // They are not super classes
+          break;
+        }
+
+        if (currentClass.getQualifiedName() != null && currentClass.getQualifiedName()
+            .toString()
+            .equals(problemClass.getQualifiedName().toString())) {
+          // The problem causing class is a super class, so we found the superclass
+          // and the sub class that cause the problem
+          return String.format(base, fieldName, otherClass.getQualifiedName().toString(),
+              Arg.class.getSimpleName(), problemClass.getQualifiedName());
+        }
+
+        currentClass = (TypeElement) typeUtils.asElement(currentClassSuperclass);
+      }
+    }
+
+    // Since the previous check wasn't successfull we can assume:
+    // The problemClass must be a sub class, so find the super class that contains the field
+    TypeMirror superClass = problemClass.getSuperclass();
     TypeElement superClassElement = null;
+
+    warn(problemClass, "Base: " + problemClass.getQualifiedName().toString());
+
+    // TODO remove
+    if (superClass == null) {
+      error(null, "SuperClass is null");
+      return String.format(
+          "A field with the name '%s' in class %s is already annotated with @%s in super class! "
+              + "The fields name must be unique within inheritance hierarchy.", fieldName,
+          problemClass.getQualifiedName().toString(), Arg.class.getSimpleName());
+    }
+
     boolean superClassFound = false;
-    while (!superClassFound || superClass.getKind() != TypeKind.NONE) {
-      superClassElement = (TypeElement) typeUtils.asElement(superClass);
+    while (superClass != null
+        && superClass.getKind() != TypeKind.NONE
+        && (superClassElement = (TypeElement) typeUtils.asElement(superClass)) != null) {
+
       for (Element e : superClassElement.getEnclosedElements()) {
-        if (e.getKind() == ElementKind.FIELD && e.getSimpleName().toString().equals(fieldName)) {
+        if (e.getKind() == ElementKind.FIELD && e.getSimpleName() != null &&
+            e.getSimpleName().toString() != null && e.getSimpleName()
+            .toString()
+            .equals(fieldName)) {
           superClassFound = true;
           break;
         }
@@ -240,7 +291,17 @@ public class ArgProcessor extends AbstractProcessor {
       superClass = superClassElement.getSuperclass();
     }
 
-    return String.format(base, fieldName, baseClass.getQualifiedName().toString(),
+    if (superClassElement == null) {
+      // Should never be the case, however to ensure we return a error message without superclass
+      return String.format(
+          "A field with the name '%s' in class %s is already annotated with @%s in a "
+              + "super class or sub class of %s ! "
+              + "The fields name must be unique within inheritance hierarchy.", fieldName,
+          problemClass.getQualifiedName().toString(), Arg.class.getSimpleName(),
+          problemClass.getQualifiedName().toString());
+    }
+
+    return String.format(base, fieldName, problemClass.getQualifiedName().toString(),
         Arg.class.getSimpleName(), superClassElement.getQualifiedName());
   }
 
@@ -254,7 +315,7 @@ public class ArgProcessor extends AbstractProcessor {
     if (fragment.containsField(annotatedField)) {
       // A field already with the name is here
       error(annotatedField.getElement(),
-          getErrorMessageDuplicatedField(annotatedField.getClassElement(),
+          getErrorMessageDuplicatedField(fragment, annotatedField.getClassElement(),
               annotatedField.getVariableName()));
       throw new ProcessingException();
     } else if (fragment.containsBundleKey(annotatedField) != null) {
@@ -279,8 +340,6 @@ public class ArgProcessor extends AbstractProcessor {
    * Collects the fields that are annotated by the fragmentarg
    */
   private AnnotatedFragment collectArgumentsForType(TypeElement type) throws ProcessingException {
-
-    warn(type, "Processing " + type.getSimpleName());
 
     boolean superClasses = true;
     InheritedFragmentArgs inheritedFragmentArgs = type.getAnnotation(InheritedFragmentArgs.class);
