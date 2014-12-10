@@ -204,7 +204,42 @@ public class OtherFragment extends BaseFragment {
       }
 }
 ```
-`FragmentArgs` also supports inheritance and abstract classes. That means that annotated fields of the supper class are part of the builder of the subclass.
+`FragmentArgs` also supports inheritance and abstract classes. That means that annotated fields of the supper class are part of the builder of the subclass. Furthermore there are special cases where you have a Fragment without any `@Arg` annotation but you want to use the arguments of the super class. For this special case you can use `@FragmentArgsInherited`. For Example:
+
+```java
+public class A extends Fragment {
+
+  @Arg int a;
+  @Arg String foo;
+
+}
+
+@FragmentArgsInherited
+public class B extends A {
+
+  // Arguments will be taken from super class
+   
+   
+   public View onCreateView(LayoutInflater inflater, ViewGroup container,
+               Bundle savedInstanceState) {
+   
+      // Here you can simply access the inherited fields from super class
+   }
+}
+```
+
+There may be special edge cases where you don't want to use the fragment args from super class. Then you can use `@FragmentArgsInherited(false)`. Example:
+```java
+@FragmentArgsInherited(false)
+public class C extends A {
+
+   @Arg int c;
+
+}
+```
+
+In this case only `c` will be argument of class C and the arguments of super class A are ignored.
+
 
 #Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  

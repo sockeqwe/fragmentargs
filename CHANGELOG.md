@@ -1,3 +1,7 @@
+#2.0.0 (12/10/2014)
+ - Support for inheritance through included modules, jar and aar
+ - Introduced `@FragmentArgsInherited` annotation
+
 #1.2.0 (12/06/2014)
 Better support for inheritance and abstract classes
 
