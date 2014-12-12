@@ -1,3 +1,5 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
+
 #FragmentArgs
 Annotation Processor to create arguments for android fragments without using reflections.
 
