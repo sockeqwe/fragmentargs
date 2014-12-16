@@ -1,12 +1,10 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
-
 #FragmentArgs
 Annotation Processor to create arguments for android fragments without using reflections.
 
 I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs/
 
 #Dependency
-Check [GradlePlease](http://gradleplease.appspot.com/#com.hannesdorfmann.fragmentargs) to get the latest version number.
+Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
 
 To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
 
