@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,6 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -36,17 +36,18 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 /**
- * This is a processor for FragmentArgs
+ * This is the annotation processor for FragmentArgs
  *
  * @author Hannes Dorfmann
  */
-@SupportedAnnotationTypes({
-    "com.hannesdorfmann.fragmentargs.annotation.Arg",
-    "com.hannesdorfmann.fragmentargs.annotation.InheritedFragmentArgs"
-})
 public class ArgProcessor extends AbstractProcessor {
 
   private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
+
+  /**
+   * Annotation Processor Option
+   */
+  private static final String OPTION_IS_LIBRARY = "fragmentArgsLib";
 
   static {
     ARGUMENT_TYPES.put("java.lang.String", "String");
@@ -75,8 +76,20 @@ public class ArgProcessor extends AbstractProcessor {
   private Types typeUtils;
   private Filer filer;
 
-  @Override
-  public synchronized void init(ProcessingEnvironment env) {
+  @Override public Set<String> getSupportedAnnotationTypes() {
+    Set<String> supportTypes = new LinkedHashSet<String>();
+    supportTypes.add(Arg.class.getCanonicalName());
+    supportTypes.add(FragmentArgsInherited.class.getCanonicalName());
+    return supportTypes;
+  }
+
+  @Override public Set<String> getSupportedOptions() {
+    Set<String> suppotedOptions = new LinkedHashSet<String>();
+    suppotedOptions.add(OPTION_IS_LIBRARY);
+    return suppotedOptions;
+  }
+
+  @Override public synchronized void init(ProcessingEnvironment env) {
     super.init(env);
 
     elementUtils = env.getElementUtils();
@@ -370,8 +383,8 @@ public class ArgProcessor extends AbstractProcessor {
     Filer filer = processingEnv.getFiler();
 
     boolean isLibrary = false;
-    String fragementArgsLib = processingEnv.getOptions().get("fragmentArgsLib");
-    if (fragementArgsLib != null && fragementArgsLib.equalsIgnoreCase("true")) {
+    String fragmentArgsLib = processingEnv.getOptions().get(OPTION_IS_LIBRARY);
+    if (fragmentArgsLib != null && fragmentArgsLib.equalsIgnoreCase("true")) {
       isLibrary = true;
     }
 
@@ -427,6 +440,7 @@ public class ArgProcessor extends AbstractProcessor {
             FragmentArgsInherited.class.getSimpleName(), classElement.getQualifiedName());
         continue;
       }
+
       // Skip abstract classes
       if (!classElement.getModifiers().contains(Modifier.ABSTRACT)) {
         fragmentClasses.add(classElement);
