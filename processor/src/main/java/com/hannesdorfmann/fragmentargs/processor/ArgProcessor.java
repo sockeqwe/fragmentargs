@@ -581,7 +581,7 @@ public class ArgProcessor extends AbstractProcessor {
       for (Map.Entry<String, String> entry : mapping.entrySet()) {
 
         jw.emitEmptyLine();
-        jw.beginControlFlow("if ( \"%s\".equals(targetName) )", entry.getKey());
+        jw.beginControlFlow("if ( %s.class.getName().equals(targetName) )", entry.getKey());
         jw.emitStatement("%s.injectArguments( ( %s ) target)", entry.getValue(), entry.getKey());
         jw.emitStatement("return");
         jw.endControlFlow();
