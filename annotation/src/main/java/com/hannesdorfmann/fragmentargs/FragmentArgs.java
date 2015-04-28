@@ -2,6 +2,7 @@ package com.hannesdorfmann.fragmentargs;
 
 /**
  * The root class to inject arguments to a fragment
+ *
  * @author Hannes Dorfmann
  */
 public class FragmentArgs {
@@ -28,9 +29,11 @@ public class FragmentArgs {
         // Since 2.0.0 we don't throw an exception because of android library support.
         // Instead we print this exception as warning message
 
+        /*
         Exception wrapped = new Exception("Could not load the generated automapping class. "
             + "However, that may be ok, if you use FragmentArgs in library projects", e);
         wrapped.printStackTrace();
+        */
       }
     }
 
