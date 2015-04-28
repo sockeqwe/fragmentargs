@@ -292,5 +292,10 @@ public class FragmenInLib extends Fragment {
 
 ``` 
 
+#Proguard
+```
+-keep class com.hannesdorfmann.fragmentargs.** { *; }
+```
+
 #Thanks
 Parts of the annotation code are based on Hugo Visser's [Bundle](https://bitbucket.org/hvisser/bundles) project. I have added some optimizations and improvements.
