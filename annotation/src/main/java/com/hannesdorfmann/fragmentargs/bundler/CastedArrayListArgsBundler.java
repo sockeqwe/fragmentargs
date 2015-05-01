@@ -26,7 +26,7 @@ public class CastedArrayListArgsBundler implements ArgsBundler<List<? extends Pa
               + value.getClass().getCanonicalName());
     }
 
-    bundle.putParcelableArrayList(key, (ArrayList) value);
+    bundle.putParcelableArrayList(key, (ArrayList<? extends Parcelable>) value);
   }
 
   @Override public List<? extends Parcelable> get(String key, Bundle bundle) {
