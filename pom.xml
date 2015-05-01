@@ -17,6 +17,7 @@
   <modules>
     <module>annotation</module>
     <module>processor</module>
+    <module>bundler-parceler</module>
   </modules>
 
 
