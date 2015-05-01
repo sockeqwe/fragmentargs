@@ -4,6 +4,7 @@ import com.hannesdorfmann.fragmentargs.FragmentArgs;
 import com.hannesdorfmann.fragmentargs.FragmentArgsInjector;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import com.hannesdorfmann.fragmentargs.annotation.FragmentArgsInherited;
+import com.hannesdorfmann.fragmentargs.bundler.ArgsBundler;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
 import java.io.Serializable;
@@ -95,7 +96,7 @@ public class ArgProcessor extends AbstractProcessor {
     filer = env.getFiler();
   }
 
-  protected String getOperation(AnnotatedField arg) {
+  protected String getOperation(ArgumentAnnotatedField arg) {
     String op = ARGUMENT_TYPES.get(arg.getRawType());
     if (op != null) {
       if (arg.isArray()) {
@@ -156,21 +157,32 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
-      AnnotatedField arg) throws IOException, ProcessingException {
-    String op = getOperation(arg);
+      ArgumentAnnotatedField arg) throws IOException, ProcessingException {
 
-    if (op == null) {
-      throw new ProcessingException(arg.getElement(), "Don't know how to put %s in a Bundle",
-          arg.getElement().asType().toString());
+    jw.emitEmptyLine();
+
+    if (arg.hasCustomBundler()) {
+      jw.emitStatement("%s.put(\"%s\", %s, %s)", arg.getBundlerFieldName(), arg.getKey(),
+          sourceVariable, bundleVariable);
+    } else {
+
+      String op = getOperation(arg);
+
+      if (op == null) {
+        throw new ProcessingException(arg.getElement(),
+            "Don't know how to put %s in a Bundle. This type is not supported by default. "
+                + "However, you can specify your own %s implementation in @Arg( bundler = YourBundler.class)",
+            arg.getElement().asType().toString(), ArgsBundler.class.getSimpleName());
+      }
+      if ("Serializable".equals(op)) {
+        processingEnv.getMessager()
+            .printMessage(Diagnostic.Kind.WARNING,
+                String.format("%1$s will be stored as Serializable", arg.getName()),
+                arg.getElement());
+      }
+      jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable,
+          bundleVariable);
     }
-    if ("Serializable".equals(op)) {
-      processingEnv.getMessager()
-          .printMessage(Diagnostic.Kind.WARNING,
-              String.format("%1$s will be stored as Serializable", arg.getName()),
-              arg.getElement());
-    }
-    jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable,
-        bundleVariable);
   }
 
   protected void writePackage(JavaWriter jw, TypeElement type) throws IOException {
@@ -201,7 +213,7 @@ public class ArgProcessor extends AbstractProcessor {
         Arg annotation = null;
         if ((annotation = e.getAnnotation(Arg.class)) != null) {
           ArgumentAnnotatedField annotatedField =
-              new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement());
+              new ArgumentAnnotatedField(e, (TypeElement) e.getEnclosingElement(), annotation);
           addAnnotatedField(annotatedField, fragment, annotation);
         }
       }
@@ -233,7 +245,7 @@ public class ArgProcessor extends AbstractProcessor {
     // Assumption: The problemClass is already a super class of the real problem,
     // So determine the real problem by searching for the subclass that cause this problem
     TypeElement otherClass = null;
-    for (AnnotatedField otherField : fragment.getAll()) {
+    for (ArgumentAnnotatedField otherField : fragment.getAll()) {
       if (otherField.getVariableName().equals(fieldName)) {
         otherClass = otherField.getClassElement();
         break;
@@ -325,7 +337,7 @@ public class ArgProcessor extends AbstractProcessor {
               annotatedField.getVariableName()));
     } else if (fragment.containsBundleKey(annotatedField) != null) {
       //  key for bundle is already in use
-      AnnotatedField otherField = fragment.containsBundleKey(annotatedField);
+      ArgumentAnnotatedField otherField = fragment.containsBundleKey(annotatedField);
       throw new ProcessingException(annotatedField.getElement(),
           "The bundle key '%s' for field %s in %s is already used by another "
               + "argument in %s (field name is '%s'). Bundle keys must be unique in inheritance hierarchy!",
@@ -363,7 +375,7 @@ public class ArgProcessor extends AbstractProcessor {
       if (element.getKind() == ElementKind.FIELD) {
         Arg annotation = element.getAnnotation(Arg.class);
         if (annotation != null) {
-          ArgumentAnnotatedField field = new ArgumentAnnotatedField(element, type);
+          ArgumentAnnotatedField field = new ArgumentAnnotatedField(element, type, annotation);
           addAnnotatedField(field, fragment, annotation);
         }
       }
@@ -382,6 +394,8 @@ public class ArgProcessor extends AbstractProcessor {
     if (fragmentArgsLib != null && fragmentArgsLib.equalsIgnoreCase("true")) {
       isLibrary = true;
     }
+
+    JavaWriter jw = null;
 
     try { // Catch processing exceptions
 
@@ -470,51 +484,66 @@ public class ArgProcessor extends AbstractProcessor {
 
           Element[] orig = originating.toArray(new Element[originating.size()]);
           origHelper = orig;
+
           JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName, orig);
           Writer writer = jfo.openWriter();
-          JavaWriter jw = new JavaWriter(writer);
+          jw = new JavaWriter(writer);
           writePackage(jw, fragmentClass);
           jw.emitImports("android.os.Bundle");
+          jw.emitEmptyLine();
           jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+
+          if (!fragment.getBundlerVariableMap().isEmpty()) {
+            jw.emitEmptyLine();
+            for (Map.Entry<String, String> e : fragment.getBundlerVariableMap().entrySet()) {
+              jw.emitField(e.getKey(), e.getValue(),
+                  EnumSet.of(Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC),
+                  "new " + e.getKey() + "()");
+            }
+          }
+          jw.emitEmptyLine();
           jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL),
               "new Bundle()");
           jw.emitEmptyLine();
 
-          Set<AnnotatedField> required = fragment.getRequiredFields();
+          Set<ArgumentAnnotatedField> required = fragment.getRequiredFields();
 
           String[] args = new String[required.size() * 2];
           int index = 0;
 
-          for (AnnotatedField arg : required) {
+          for (ArgumentAnnotatedField arg : required) {
             args[index++] = arg.getType();
             args[index++] = arg.getVariableName();
           }
           jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
 
-          for (AnnotatedField arg : required) {
+          for (ArgumentAnnotatedField arg : required) {
             writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
           }
 
           jw.endMethod();
 
           if (!required.isEmpty()) {
+            jw.emitEmptyLine();
             writeNewFragmentWithRequiredMethod(builder, fragmentClass, jw, args);
           }
 
-          Set<AnnotatedField> optionalArguments = fragment.getOptionalFields();
+          Set<ArgumentAnnotatedField> optionalArguments = fragment.getOptionalFields();
 
-          for (AnnotatedField arg : optionalArguments) {
+          for (ArgumentAnnotatedField arg : optionalArguments) {
             writeBuilderMethod(builder, jw, arg);
           }
 
-          try {
-            writeInjectMethod(jw, fragmentClass, fragment.getAll());
-            writeBuildMethod(jw, fragmentClass);
-            writeBuildSubclassMethod(jw, fragmentClass);
-            jw.endType();
-            jw.close();
-          } catch (Exception e) {
-          }
+          jw.emitEmptyLine();
+          writeInjectMethod(jw, fragmentClass, fragment.getAll());
+
+          jw.emitEmptyLine();
+          writeBuildMethod(jw, fragmentClass);
+
+          jw.emitEmptyLine();
+          writeBuildSubclassMethod(jw, fragmentClass);
+          jw.endType();
+          jw.close();
 
           autoMapping.put(qualifiedFragmentName, qualifiedBuilderName);
         } catch (IOException e) {
@@ -529,6 +558,15 @@ public class ArgProcessor extends AbstractProcessor {
       }
     } catch (ProcessingException e) {
       // print error
+      if (jw != null) {
+
+        // Do cleanup if not closed yet
+        try {
+          jw.close();
+        } catch (Exception catched) {
+        }
+      }
+
       error(e);
     }
 
@@ -629,7 +667,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
-      Set<AnnotatedField> allArguments) throws IOException, ProcessingException {
+      Set<ArgumentAnnotatedField> allArguments) throws IOException, ProcessingException {
     jw.beginMethod("void", "injectArguments",
         EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         element.getSimpleName().toString(), "fragment");
@@ -639,35 +677,66 @@ public class ArgProcessor extends AbstractProcessor {
     jw.emitStatement("throw new IllegalStateException(\"No arguments set\")");
     jw.endControlFlow();
 
-    for (AnnotatedField type : allArguments) {
-      String op = getOperation(type);
-      if (op == null) {
-        throw new ProcessingException(element,
-            "Can't write injector, the bundle getter is unknown");
-      }
-      String cast = "Serializable".equals(op) ? "(" + type.getType() + ") " : "";
-      if (!type.isRequired()) {
-        jw.beginControlFlow(
-            "if (args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+    for (ArgumentAnnotatedField type : allArguments) {
+      jw.emitEmptyLine();
+
+      // Args Bundler
+      if (type.hasCustomBundler()) {
+
+        // Required
+        if (type.isRequired()) {
+          jw.beginControlFlow(
+              "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+          jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
+              type.getKey());
+          jw.endControlFlow();
+          jw.emitStatement("fragment.%s = %s.get(\"%s\", args)", type.getName(),
+              type.getBundlerFieldName(), type.getKey());
+        } else {
+          // not required bundler
+          jw.beginControlFlow(
+              "if (args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+          jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
+              type.getKey());
+          jw.endControlFlow();
+          jw.emitStatement("fragment.%s = %s.get(\"%s\", args)", type.getName(),
+              type.getBundlerFieldName(), type.getKey());
+        }
       } else {
-        jw.beginControlFlow(
-            "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
-        jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
-            type.getKey());
-        jw.endControlFlow();
-      }
 
-      jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op,
-          type.getKey(), cast);
+        // Build in functions
+        String op = getOperation(type);
+        if (op == null) {
+          throw new ProcessingException(element,
+              "Can't write injector, the type is not supported by default. "
+                  + "However, You can provide your own implementation by providing an %s like this: @Arg( bundler = YourBundler.class )",
+              ArgsBundler.class.getSimpleName());
+        }
 
-      if (!type.isRequired()) {
-        jw.endControlFlow();
+        String cast = "Serializable".equals(op) ? "(" + type.getType() + ") " : "";
+        if (!type.isRequired()) {
+          jw.beginControlFlow(
+              "if (args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+        } else {
+          jw.beginControlFlow(
+              "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+          jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
+              type.getKey());
+          jw.endControlFlow();
+        }
+
+        jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op,
+            type.getKey(), cast);
+
+        if (!type.isRequired()) {
+          jw.endControlFlow();
+        }
       }
     }
     jw.endMethod();
   }
 
-  private void writeBuilderMethod(String type, JavaWriter writer, AnnotatedField arg)
+  private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg)
       throws IOException, ProcessingException {
     writer.emitEmptyLine();
     writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), arg.getType(),
