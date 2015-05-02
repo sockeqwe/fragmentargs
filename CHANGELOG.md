@@ -1,3 +1,8 @@
+#2.1.0 (2015-05-01)
+ - Added `ArgsBundler` to provide a plugin mechanism for not out of the box supported data types. Two ArgsBundler are already provided `CastedArrayListArgsBundler` and `PacelerArgsBundler`.
+ - Removed warning: "Could not load the generated automapping class. However, that may be ok, if you use FragmentArgs in library projects".
+ - Better error messages if annotating `@Arg` on unsupported type fields.
+
 #2.0.1 (2014-12-22)
  - Removed the compilation warning: `Warning: The following options were not recognized by any processor: '[fragmentArgsLib]'`
  - Minor bugfix that have occurred on some java 6 enviroments in combination with `@FragmentArgsInherited`
