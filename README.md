@@ -241,8 +241,73 @@ public class C extends A {
 
 In this case only `c` will be argument of class C and the arguments of super class A are ignored.
 
+# ArgsBundler
+FragmentArgs supports the most common datastructures that you can put in a `Bundle` and hence set as arguments for a Fragment. The type of the `@Arg` annotated field is used for that. If you want to set not a out of the box supported datatype (like a class you cant make `Parcelable` for whatever reason) as argument you can specify your own `ArgsBundler`.
 
-#Support Fragment
+```java
+public class DateArgsBundler implements DateArgsBundler<Foo>{
+
+    @Override public void put(String key, Date value, Bundle bundle) {
+        
+        bundle.putLong(key, value.getTime());
+    }
+
+    @Override public Foo get(String key, Bundle bundle) {
+        
+        long timestamp = bundle.getLong(key);
+        return new Date(timestamp);
+    }
+
+}
+
+public class MyFragment extends Fragment {
+
+    @Arg ( bundler = DateArgsBundler.class )
+    Date date;
+
+}
+```
+
+There are already two `ArgBundler` you may find useful:
+```java
+public class MyFragment {
+   
+    @Arg ( bundler = CastedArrayListArgsBundler.class )
+    List<Foo> fooList;   // Foo implmenets Parcelable
+
+    @Arg ( bunlder =  ParcelerArgsBundler.class)
+    Dog dog;   // Dog is @Parcel annotated
+}
+```
+
+ - `CastedArrayListArgsBundler`: The problem is that in a Bundle supports `java.util.ArrayList` and not `java.util.List`. `CastedArrayListArgsBundler` assumes that the List implementation is `ArrayList` and casts `List` internally to `ArrayList` and put it into a bundle.
+
+ - If you use [Parceler](http://parceler.org/) then you may know that your `@Parcel` annotated class is not implemnting `Parcelable` directly (Parceler generates a wrapper for your class that implements Parcelable). Therefore a `@Parcelable` class can not be set directly as fragment argument with `@Arg`. However, there is a ArgsBundler called `ParcelerArgsBundler` that you can use with `@Parcel`.
+
+    ´´´java 
+    @Parcel
+    public class Dog {
+        String name;
+    }
+
+
+    public class MyFragment {
+
+        @Arg ( bundler = ParcelerArgsBundler.class )
+        Dog foo;
+
+    }
+
+    ```
+
+    While `CastedArrayListArgsBundler` already ships with `compile 'com.hannesdorfmann.fragmentargs:annotation:x.x.x'` you have to add 
+    ``` groovy
+    compile 'com.hannesdorfmann.fragmentargs:bundler-parceler:x.x.x'
+    ```
+    as dependency to use `ParcelerArgsBundler`.
+
+
+# Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  
 
 # Using in library projects
