@@ -284,27 +284,28 @@ public class MyFragment {
 
  - If you use [Parceler](http://parceler.org/) then you may know that your `@Parcel` annotated class is not implemnting `Parcelable` directly (Parceler generates a wrapper for your class that implements Parcelable). Therefore a `@Parcelable` class can not be set directly as fragment argument with `@Arg`. However, there is a ArgsBundler called `ParcelerArgsBundler` that you can use with `@Parcel`.
 
-    ´´´java 
+    ```java
     @Parcel
     public class Dog {
-        String name;
+      String name;
     }
 
 
     public class MyFragment {
 
-        @Arg ( bundler = ParcelerArgsBundler.class )
-        Dog foo;
+       @Arg ( bundler = ParcelerArgsBundler.class )
+       Dog foo;
 
     }
 
     ```
 
-    While `CastedArrayListArgsBundler` already ships with `compile 'com.hannesdorfmann.fragmentargs:annotation:x.x.x'` you have to add 
-    ``` groovy
-    compile 'com.hannesdorfmann.fragmentargs:bundler-parceler:x.x.x'
-    ```
-    as dependency to use `ParcelerArgsBundler`.
+While `CastedArrayListArgsBundler` already ships with `compile 'com.hannesdorfmann.fragmentargs:annotation:x.x.x' ` you have to add
+
+``` groovy
+compile 'com.hannesdorfmann.fragmentargs:bundler-parceler:x.x.x'
+```
+as dependency to use `ParcelerArgsBundler`.
 
 
 # Support Fragment
