@@ -20,7 +20,7 @@ where you have to replace x.x.x with the latest version.
 The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/master/CHANGELOG.md)
 
 #How to use
-FragmentArgs generates java code at compile time. It generates a `Builder` class out of your Fragment class.
+FragmentArgs generates Java code at compile time. It generates a `Builder` class out of your Fragment class.
 
 There are three important things to note:
  1. Fields **MUST** have at least package (default) visibility. That means no private, protected or static fields can be annotated with `@Arg`. The generated Builder class is in the same package as the Fragment is. Therefore it needs at least package visibility to access the annotated fields.
@@ -120,7 +120,7 @@ public class MyOptionalFragment extends Fragment {
 }
 ```
 
-Optional Arguments will genearete a `Builder` class with additional methods to set optional arguments.
+Optional Arguments will generate a `Builder` class with additional methods to set optional arguments.
 
 For Example:
 ```java
@@ -152,9 +152,9 @@ public class MyActivity extends Activity {
 }
 ```
 
-As you have seen optional fragment arguments are part of the `Builder` class as an own methods. Since they are optional you can decide if you want to set optinal values or not by calling the corresponding method or skip the corresponding method call. 
+As you have seen optional fragment arguments are part of the `Builder` class as an own methods. Since they are optional you can decide if you want to set optional values or not by calling the corresponding method or skip the corresponding method call. 
 
-Like you have seen from the example above fields named with "m" prefix will be automatically cut by making the method name the substring of the original fields name without the "m" prefix. For example the field `int mFeatureId` corresponds to the builders method `featureId(int)`
+Like you have seen from the example above fields named with "m" prefix will be automatically cut by making the method name the sub-string of the original fields name without the "m" prefix. For example the field `int mFeatureId` corresponds to the builders method `featureId(int)`
 
 ## Inheritance - Best practice
 Wouldn't it be painful to override `onCreate(Bundle)` in every Fragment of your app just to insert `FragmentArgs.inject(this)`.
@@ -242,7 +242,7 @@ public class C extends A {
 In this case only `c` will be argument of class C and the arguments of super class A are ignored.
 
 # ArgsBundler
-FragmentArgs supports the most common datastructures that you can put in a `Bundle` and hence set as arguments for a Fragment. The type of the `@Arg` annotated field is used for that. If you want to set not a out of the box supported datatype (like a class you cant make `Parcelable` for whatever reason) as argument you can specify your own `ArgsBundler`.
+FragmentArgs supports the most common data structures that you can put in a `Bundle` and hence set as arguments for a Fragment. The type of the `@Arg` annotated field is used for that. If you want to set not a out of the box supported data type (like a class you cant make `Parcelable` for whatever reason) as argument you can specify your own `ArgsBundler`.
 
 ```java
 public class DateArgsBundler implements DateArgsBundler<Foo>{
@@ -273,16 +273,16 @@ There are already two `ArgBundler` you may find useful:
 public class MyFragment {
    
     @Arg ( bundler = CastedArrayListArgsBundler.class )
-    List<Foo> fooList;   // Foo implmenets Parcelable
+    List<Foo> fooList;   // Foo implements Parcelable
 
-    @Arg ( bunlder =  ParcelerArgsBundler.class)
+    @Arg ( bundler =  ParcelerArgsBundler.class)
     Dog dog;   // Dog is @Parcel annotated
 }
 ```
 
  - `CastedArrayListArgsBundler`: The problem is that in a Bundle supports `java.util.ArrayList` and not `java.util.List`. `CastedArrayListArgsBundler` assumes that the List implementation is `ArrayList` and casts `List` internally to `ArrayList` and put it into a bundle.
 
- - If you use [Parceler](http://parceler.org/) then you may know that your `@Parcel` annotated class is not implemnting `Parcelable` directly (Parceler generates a wrapper for your class that implements Parcelable). Therefore a `@Parcelable` class can not be set directly as fragment argument with `@Arg`. However, there is a ArgsBundler called `ParcelerArgsBundler` that you can use with `@Parcel`.
+ - If you use [Parceler](http://parceler.org/) then you may know that your `@Parcel` annotated class is not implemnting `Parcelable` directly (Parceler generates a wrapper for your class that implements Parcelable). Therefore a `@Parcel` class can not be set directly as fragment argument with `@Arg`. However, there is a ArgsBundler called `ParcelerArgsBundler` that you can use with `@Parcel`.
 
     ```java
     @Parcel
