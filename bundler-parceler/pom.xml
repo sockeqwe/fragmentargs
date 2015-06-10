@@ -31,7 +31,7 @@
     <dependency>
       <groupId>org.parceler</groupId>
       <artifactId>parceler-api</artifactId>
-      <version>0.2.16</version>
+      <version>1.0.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
