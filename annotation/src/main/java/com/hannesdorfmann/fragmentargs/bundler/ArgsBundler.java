@@ -27,7 +27,7 @@ public interface ArgsBundler<T> {
    * @param bundle The Bundle where the value is saved in
    * @return The value retrieved from the Bundle with the given key
    */
-  public T get(String key, Bundle bundle);
+  public <V extends T> V get(String key, Bundle bundle);
 
 
 

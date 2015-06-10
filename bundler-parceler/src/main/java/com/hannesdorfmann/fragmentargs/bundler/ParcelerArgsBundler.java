@@ -15,7 +15,7 @@ public class ParcelerArgsBundler implements ArgsBundler<Object> {
     bundle.putParcelable(key, Parcels.wrap(value));
   }
 
-  @Override public Object get(String key, Bundle bundle) {
+  @Override public <V> V get(String key, Bundle bundle) {
     return Parcels.unwrap(bundle.getParcelable(key));
   }
 }

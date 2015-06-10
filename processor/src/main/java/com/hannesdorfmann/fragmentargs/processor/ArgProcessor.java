@@ -41,6 +41,9 @@ import javax.tools.JavaFileObject;
  */
 public class ArgProcessor extends AbstractProcessor {
 
+  private static final String CUSTOM_BUNDLER_BUNDLE_KEY =
+      "com.hannesdorfmann.fragmentargs.custom.bundler.2312A478rand.";
+
   private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
 
   /**
@@ -162,6 +165,8 @@ public class ArgProcessor extends AbstractProcessor {
     jw.emitEmptyLine();
 
     if (arg.hasCustomBundler()) {
+      jw.emitStatement("%s.putBoolean(\"%s\", true)", bundleVariable,
+          CUSTOM_BUNDLER_BUNDLE_KEY + arg.getKey());
       jw.emitStatement("%s.put(\"%s\", %s, %s)", arg.getBundlerFieldName(), arg.getKey(),
           sourceVariable, bundleVariable);
     } else {
@@ -685,8 +690,8 @@ public class ArgProcessor extends AbstractProcessor {
 
         // Required
         if (type.isRequired()) {
-          jw.beginControlFlow(
-              "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+          jw.beginControlFlow("if (!args.containsKey(" + JavaWriter.stringLiteral(
+              CUSTOM_BUNDLER_BUNDLE_KEY + type.getKey()) + "))");
           jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
               type.getKey());
           jw.endControlFlow();
@@ -694,13 +699,12 @@ public class ArgProcessor extends AbstractProcessor {
               type.getBundlerFieldName(), type.getKey());
         } else {
           // not required bundler
-          jw.beginControlFlow(
-              "if (args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
-          jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
-              type.getKey());
-          jw.endControlFlow();
+          jw.beginControlFlow("if (args.getBoolean(" + JavaWriter.stringLiteral(
+              CUSTOM_BUNDLER_BUNDLE_KEY + type.getKey()) + "))");
           jw.emitStatement("fragment.%s = %s.get(\"%s\", args)", type.getName(),
               type.getBundlerFieldName(), type.getKey());
+
+          jw.endControlFlow();
         }
       } else {
 
