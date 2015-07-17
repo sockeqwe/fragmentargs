@@ -53,7 +53,8 @@ public class MyFragment extends Fragment {
       
       		Toast.makeText(getActivity(), "Hello " + title, 
       			Toast.LENGTH_SHORT).show();
-      
+      			
+      		return null;
       }
       
 }
