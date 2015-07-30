@@ -4,5 +4,3 @@ branches:
   - gh-pages
 notifications:
   email: false
-  
-script: mvn clean install
