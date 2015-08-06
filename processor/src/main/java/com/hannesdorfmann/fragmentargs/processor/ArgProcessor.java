@@ -618,6 +618,7 @@ public class ArgProcessor extends AbstractProcessor {
       jw.emitEmptyLine();
       jw.emitStatement("Class<?> targetClass = target.getClass()");
       jw.emitStatement("String targetName = targetClass.getCanonicalName()");
+      // TODO should be targetClass.getName()? Inner anonymous class not possible?
 
       for (Map.Entry<String, String> entry : mapping.entrySet()) {
 
