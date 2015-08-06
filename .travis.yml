@@ -1,12 +1,24 @@
-language: android
-android:
-  components:
-  - build-tools-20.0.0
-  - android-19
-  licenses:
-  - android-sdk-license-5be876d5
-branches:
-  except:
-  - gh-pages
-notifications:
-  email: false
+language: java
+
+jdk:
+  - oraclejdk8
+
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+env:
+  global:
+    - MAVEN_OPTS="-Xmx256M"
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2/io
+    - $HOME/.m2/org
+
+install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -q -T 2
+
+script: mvn test -Dair.check.skip-dependency=true
