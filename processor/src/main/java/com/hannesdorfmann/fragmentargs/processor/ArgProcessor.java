@@ -393,8 +393,8 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     if (fragmentWithArgs != null && inheritedFragmentArgs != null) {
-      throw new ProcessingException(type, "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s", type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
-          .getSimpleName(), FragmentWithArgs.class);
+      throw new ProcessingException(type, "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s only.", type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
+          .getSimpleName(), FragmentWithArgs.class.getSimpleName());
     }
 
     return scanSuperClasses; // Default value
