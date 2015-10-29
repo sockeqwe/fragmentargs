@@ -19,4 +19,4 @@ cache:
     - $HOME/.m2/io
     - $HOME/.m2/org
 
-script: mvn clean install -DperformRelease=true
+script: mvn clean install -DperformRelease=false -DskipTests=true -Dmaven.javadoc.skip=true -B -V -q -T 2
