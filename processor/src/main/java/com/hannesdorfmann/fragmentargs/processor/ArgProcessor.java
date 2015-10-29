@@ -4,11 +4,13 @@ import com.hannesdorfmann.fragmentargs.FragmentArgs;
 import com.hannesdorfmann.fragmentargs.FragmentArgsInjector;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 import com.hannesdorfmann.fragmentargs.annotation.FragmentArgsInherited;
+import com.hannesdorfmann.fragmentargs.annotation.FragmentWithArgs;
 import com.hannesdorfmann.fragmentargs.bundler.ArgsBundler;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -78,25 +80,36 @@ public class ArgProcessor extends AbstractProcessor {
   private Types typeUtils;
   private Filer filer;
 
-  @Override public Set<String> getSupportedAnnotationTypes() {
+  private TypeElement TYPE_FRAGMENT;
+  private TypeElement TYPE_SUPPORT_FRAGMENT;
+
+  @Override
+  public Set<String> getSupportedAnnotationTypes() {
     Set<String> supportTypes = new LinkedHashSet<String>();
     supportTypes.add(Arg.class.getCanonicalName());
     supportTypes.add(FragmentArgsInherited.class.getCanonicalName());
     return supportTypes;
   }
 
-  @Override public Set<String> getSupportedOptions() {
+  @Override
+  public Set<String> getSupportedOptions() {
     Set<String> suppotedOptions = new LinkedHashSet<String>();
     suppotedOptions.add(OPTION_IS_LIBRARY);
     return suppotedOptions;
   }
 
-  @Override public synchronized void init(ProcessingEnvironment env) {
+  @Override
+  public synchronized void init(ProcessingEnvironment env) {
     super.init(env);
 
     elementUtils = env.getElementUtils();
     typeUtils = env.getTypeUtils();
     filer = env.getFiler();
+
+
+    TYPE_FRAGMENT = elementUtils.getTypeElement("android.app.Fragment");
+    TYPE_SUPPORT_FRAGMENT =
+        elementUtils.getTypeElement("android.support.v4.app.Fragment");
   }
 
   protected String getOperation(ArgumentAnnotatedField arg) {
@@ -112,11 +125,11 @@ public class ArgProcessor extends AbstractProcessor {
     Elements elements = processingEnv.getElementUtils();
     TypeMirror type = arg.getElement().asType();
     Types types = processingEnv.getTypeUtils();
-    String[] arrayListTypes = new String[] {
+    String[] arrayListTypes = new String[]{
         String.class.getName(), Integer.class.getName(), CharSequence.class.getName()
     };
     String[] arrayListOps =
-        new String[] { "StringArrayList", "IntegerArrayList", "CharSequenceArrayList" };
+        new String[]{"StringArrayList", "IntegerArrayList", "CharSequenceArrayList"};
     for (int i = 0; i < arrayListTypes.length; i++) {
       TypeMirror tm = getArrayListType(arrayListTypes[i]);
       if (types.isAssignable(type, tm)) {
@@ -160,7 +173,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
-      ArgumentAnnotatedField arg) throws IOException, ProcessingException {
+                                   ArgumentAnnotatedField arg) throws IOException, ProcessingException {
 
     jw.emitEmptyLine();
 
@@ -241,7 +254,7 @@ public class ArgProcessor extends AbstractProcessor {
    * already defined in a super class
    */
   private String getErrorMessageDuplicatedField(AnnotatedFragment fragment,
-      TypeElement problemClass, String fieldName) {
+                                                TypeElement problemClass, String fieldName) {
 
     String base =
         "A field with the name '%s' in class %s is already annotated with @%s in super class %s ! "
@@ -333,7 +346,7 @@ public class ArgProcessor extends AbstractProcessor {
    * will be printed
    */
   private void addAnnotatedField(ArgumentAnnotatedField annotatedField, AnnotatedFragment fragment,
-      Arg annotation) throws ProcessingException {
+                                 Arg annotation) throws ProcessingException {
 
     if (fragment.containsField(annotatedField)) {
       // A field already with the name is here
@@ -359,18 +372,41 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   /**
+   * Checks if inheritance hiererachy should be scanned for @Args annotations as well
+   *
+   * @param type The Fragment class
+   * @return true if super type should be scanned as well, otherwise false;
+   */
+  private boolean shouldScanSuperClassesFragmentArgs(TypeElement type) throws ProcessingException {
+
+    boolean scanSuperClasses = true;
+
+    FragmentWithArgs fragmentWithArgs = type.getAnnotation(FragmentWithArgs.class);
+    if (fragmentWithArgs != null) {
+      scanSuperClasses = fragmentWithArgs.inherited();
+    }
+
+    // DEPRECATED annotation
+    FragmentArgsInherited inheritedFragmentArgs = type.getAnnotation(FragmentArgsInherited.class);
+    if (inheritedFragmentArgs != null) {
+      scanSuperClasses = inheritedFragmentArgs.value();
+    }
+
+    if (fragmentWithArgs != null && inheritedFragmentArgs != null) {
+      throw new ProcessingException(type, "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s", type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
+          .getSimpleName(), FragmentWithArgs.class);
+    }
+
+    return scanSuperClasses; // Default value
+  }
+
+  /**
    * Collects the fields that are annotated by the fragmentarg
    */
   private AnnotatedFragment collectArgumentsForType(TypeElement type) throws ProcessingException {
 
-    boolean superClasses = true;
-    FragmentArgsInherited inheritedFragmentArgs = type.getAnnotation(FragmentArgsInherited.class);
-    if (inheritedFragmentArgs != null) {
-      superClasses = inheritedFragmentArgs.value();
-    }
-
     // incl. super classes
-    if (superClasses) {
+    if (shouldScanSuperClassesFragmentArgs(type)) {
       return getAllInclSuperClasses(type);
     }
 
@@ -388,7 +424,8 @@ public class ArgProcessor extends AbstractProcessor {
     return fragment;
   }
 
-  @Override public boolean process(Set<? extends TypeElement> type, RoundEnvironment env) {
+  @Override
+  public boolean process(Set<? extends TypeElement> type, RoundEnvironment env) {
 
     Elements elementUtils = processingEnv.getElementUtils();
     Types typeUtils = processingEnv.getTypeUtils();
@@ -404,10 +441,6 @@ public class ArgProcessor extends AbstractProcessor {
 
     try { // Catch processing exceptions
 
-      TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
-      TypeElement supportFragmentType =
-          elementUtils.getTypeElement("android.support.v4.app.Fragment");
-
       // REMEMBER: It's a SET! it uses .equals() .hashCode() to determine if element already in set
       Set<TypeElement> fragmentClasses = new HashSet<TypeElement>();
 
@@ -418,7 +451,7 @@ public class ArgProcessor extends AbstractProcessor {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Check if its a fragment
-        if (!isFragmentClass(enclosingElement, fragmentType, supportFragmentType)) {
+        if (!isFragmentClass(enclosingElement, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
           throw new ProcessingException(element, "@Arg can only be used on fragment fields (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
@@ -440,28 +473,11 @@ public class ArgProcessor extends AbstractProcessor {
         }
       }
 
-      // Search for "just" @InheritedFragmentArgs
-      for (Element element : env.getElementsAnnotatedWith(FragmentArgsInherited.class)) {
+      // Search for "just" @InheritedFragmentArgs --> DEPRECATED
+      scanForAnnotatedFragmentClasses(env, FragmentArgsInherited.class, fragmentClasses);
 
-        if (element.getKind() != ElementKind.CLASS) {
-          throw new ProcessingException(element, "%s can only be applied on Fragment classes",
-              FragmentArgsInherited.class.getSimpleName());
-        }
-
-        TypeElement classElement = (TypeElement) element;
-
-        // Check if its a fragment
-        if (!isFragmentClass(element, fragmentType, supportFragmentType)) {
-          throw new ProcessingException(element,
-              "%s can only be used on fragments, but %s is not a subclass of fragment",
-              FragmentArgsInherited.class.getSimpleName(), classElement.getQualifiedName());
-        }
-
-        // Skip abstract classes
-        if (!classElement.getModifiers().contains(Modifier.ABSTRACT)) {
-          fragmentClasses.add(classElement);
-        }
-      }
+      // Search for "just" @FragmentWithArgs
+      scanForAnnotatedFragmentClasses(env, FragmentWithArgs.class, fragmentClasses);
 
       // Store the key - value for the generated FragmentArtMap class
       Map<String, String> autoMapping = new HashMap<String, String>();
@@ -579,10 +595,43 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   /**
+   * Scans a fragment for a given {@link FragmentWithArgs} annotation or ({@link
+   * FragmentArgsInherited} (which is deprectated)
+   *
+   * @param env The round enviroment
+   * @param annotationClass The annotation (.class) to scan for
+   * @param fragmentClasses The set of classes already scanned (containing annotations)
+   * @throws ProcessingException
+   */
+  private void scanForAnnotatedFragmentClasses(RoundEnvironment env, Class<? extends Annotation> annotationClass, Set<TypeElement> fragmentClasses) throws ProcessingException {
+    for (Element element : env.getElementsAnnotatedWith(annotationClass)) {
+
+      if (element.getKind() != ElementKind.CLASS) {
+        throw new ProcessingException(element, "%s can only be applied on Fragment classes",
+            annotationClass.getSimpleName());
+      }
+
+      TypeElement classElement = (TypeElement) element;
+
+      // Check if its a fragment
+      if (!isFragmentClass(element, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
+        throw new ProcessingException(element,
+            "%s can only be used on fragments, but %s is not a subclass of fragment",
+            annotationClass.getSimpleName(), classElement.getQualifiedName());
+      }
+
+      // Skip abstract classes
+      if (!classElement.getModifiers().contains(Modifier.ABSTRACT)) {
+        fragmentClasses.add(classElement);
+      }
+    }
+  }
+
+  /**
    * Checks if the given element is in a valid Fragment class
    */
   private boolean isFragmentClass(Element classElement, TypeElement fragmentType,
-      TypeElement supportFragmentType) {
+                                  TypeElement supportFragmentType) {
 
     return (fragmentType != null && typeUtils.isSubtype(classElement.asType(),
         fragmentType.asType())) || (supportFragmentType != null && typeUtils.isSubtype(
@@ -642,7 +691,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element,
-      JavaWriter jw, String[] args) throws IOException {
+                                                  JavaWriter jw, String[] args) throws IOException {
     jw.beginMethod(element.getQualifiedName().toString(), "new" + element.getSimpleName(),
         EnumSet.of(Modifier.STATIC, Modifier.PUBLIC), args);
     StringBuilder argNames = new StringBuilder();
@@ -673,7 +722,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
-      Set<ArgumentAnnotatedField> allArguments) throws IOException, ProcessingException {
+                                 Set<ArgumentAnnotatedField> allArguments) throws IOException, ProcessingException {
     jw.beginMethod("void", "injectArguments",
         EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         element.getSimpleName().toString(), "fragment");
@@ -766,7 +815,8 @@ public class ArgProcessor extends AbstractProcessor {
     processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
   }
 
-  @Override public SourceVersion getSupportedSourceVersion() {
+  @Override
+  public SourceVersion getSupportedSourceVersion() {
     return SourceVersion.latestSupported();
   }
 }

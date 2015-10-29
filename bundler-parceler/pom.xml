@@ -6,7 +6,7 @@
   <parent>
     <artifactId>fragmentargs-parent</artifactId>
     <groupId>com.hannesdorfmann.fragmentargs</groupId>
-    <version>2.1.3-SNAPSHOT</version>
+    <version>3.0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
