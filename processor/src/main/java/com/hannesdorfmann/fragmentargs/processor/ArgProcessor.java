@@ -556,7 +556,7 @@ public class ArgProcessor extends AbstractProcessor {
           }
 
           jw.emitEmptyLine();
-          writeInjectMethod(jw, fragmentClass, fragment.getAll());
+          writeInjectMethod(jw, fragmentClass, fragment);
 
           jw.emitEmptyLine();
           writeBuildMethod(jw, fragmentClass);
@@ -722,15 +722,25 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
-                                 Set<ArgumentAnnotatedField> allArguments) throws IOException, ProcessingException {
+                                 AnnotatedFragment fragment) throws IOException, ProcessingException {
+
+    Set<ArgumentAnnotatedField> allArguments = fragment.getAll();
+
     jw.beginMethod("void", "injectArguments",
         EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         element.getSimpleName().toString(), "fragment");
 
-    jw.emitStatement("Bundle args = fragment.getArguments()");
-    jw.beginControlFlow("if (args == null)");
-    jw.emitStatement("throw new IllegalStateException(\"No arguments set\")");
-    jw.endControlFlow();
+
+    if (!allArguments.isEmpty()) {
+      jw.emitStatement("Bundle args = fragment.getArguments()");
+
+      // Check if bundle is null only if at least one required field
+      if (!fragment.getRequiredFields().isEmpty()) {
+        jw.beginControlFlow("if (args == null)");
+        jw.emitStatement("throw new IllegalStateException(\"No arguments set\")");
+        jw.endControlFlow();
+      }
+    }
 
     for (ArgumentAnnotatedField type : allArguments) {
       jw.emitEmptyLine();
@@ -770,7 +780,7 @@ public class ArgProcessor extends AbstractProcessor {
         String cast = "Serializable".equals(op) ? "(" + type.getType() + ") " : "";
         if (!type.isRequired()) {
           jw.beginControlFlow(
-              "if (args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+              "if (args != null && args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
         } else {
           jw.beginControlFlow(
               "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
