@@ -26,6 +26,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -216,7 +217,7 @@ public class ArgProcessor extends AbstractProcessor {
    * Scans for @Arg annotations in the class itself and all super classes (complete inheritance
    * hierarchy)
    */
-  private AnnotatedFragment getAllInclSuperClasses(TypeElement type) throws ProcessingException {
+  private AnnotatedFragment collectArgumentsForTypeInclSuperClasses(TypeElement type) throws ProcessingException {
 
     AnnotatedFragment fragment = new AnnotatedFragment(type);
     TypeElement currentClass = type;
@@ -224,6 +225,7 @@ public class ArgProcessor extends AbstractProcessor {
 
       for (Element e : currentClass.getEnclosedElements()) {
         if (e.getKind() != ElementKind.FIELD) {
+          fragment.checkAndAddSetterMethod(e);
           continue;
         }
 
@@ -407,10 +409,11 @@ public class ArgProcessor extends AbstractProcessor {
 
     // incl. super classes
     if (shouldScanSuperClassesFragmentArgs(type)) {
-      return getAllInclSuperClasses(type);
+      return collectArgumentsForTypeInclSuperClasses(type);
     }
 
     // Without super classes (inheritance)
+    Map<String, ExecutableElement> setterMethodsMap = new HashMap<String, ExecutableElement>();
     AnnotatedFragment fragment = new AnnotatedFragment(type);
     for (Element element : type.getEnclosedElements()) {
       if (element.getKind() == ElementKind.FIELD) {
@@ -419,10 +422,14 @@ public class ArgProcessor extends AbstractProcessor {
           ArgumentAnnotatedField field = new ArgumentAnnotatedField(element, type, annotation);
           addAnnotatedField(field, fragment, annotation);
         }
+      } else {
+        // check for setter
+        fragment.checkAndAddSetterMethod(element);
       }
     }
     return fragment;
   }
+
 
   @Override
   public boolean process(Set<? extends TypeElement> type, RoundEnvironment env) {
@@ -456,14 +463,29 @@ public class ArgProcessor extends AbstractProcessor {
               enclosingElement.getQualifiedName(), element);
         }
 
-        if (element.getModifiers().contains(Modifier.FINAL)
-            || element.getModifiers()
-            .contains(Modifier.STATIC)
-            || element.getModifiers().contains(Modifier.PRIVATE)
-            || element.getModifiers().contains(Modifier.PROTECTED)) {
-
+        if (element.getModifiers().contains(Modifier.FINAL)) {
           throw new ProcessingException(element,
-              "@Arg fields must not be private, protected, final or static (%s.%s)",
+              "@Arg fields must not be final (%s.%s)",
+              enclosingElement.getQualifiedName(), element);
+        }
+
+        if (element.getModifiers()
+            .contains(Modifier.STATIC)) {
+          throw new ProcessingException(element,
+              "@Arg fields must not be static (%s.%s)",
+              enclosingElement.getQualifiedName(), element);
+        }
+
+        /*
+        if (element.getModifiers().contains(Modifier.PRIVATE)) {
+          throw new ProcessingException(element,
+              "@Arg fields must not be private (%s.%s)",
+              enclosingElement.getQualifiedName(), element);
+        }
+
+        if (element.getModifiers().contains(Modifier.PROTECTED)) {
+          throw new ProcessingException(element,
+              "@Arg fields must not be protected (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
 
@@ -471,6 +493,7 @@ public class ArgProcessor extends AbstractProcessor {
         if (!enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
           fragmentClasses.add(enclosingElement);
         }
+        */
       }
 
       // Search for "just" @InheritedFragmentArgs --> DEPRECATED
@@ -737,39 +760,55 @@ public class ArgProcessor extends AbstractProcessor {
       // Check if bundle is null only if at least one required field
       if (!fragment.getRequiredFields().isEmpty()) {
         jw.beginControlFlow("if (args == null)");
-        jw.emitStatement("throw new IllegalStateException(\"No arguments set\")");
+        jw.emitStatement("throw new IllegalStateException(\"No arguments set. Have you setup this Fragment with the corresponding FragmentArgs Builder? \")");
         jw.endControlFlow();
       }
     }
 
-    for (ArgumentAnnotatedField type : allArguments) {
+    for (ArgumentAnnotatedField field : allArguments) {
       jw.emitEmptyLine();
 
+
+      // Check if the given setter is available
+      String setterMethod = null;
+      boolean useSetter = field.isUseSetterMethod();
+      if (useSetter) {
+        ExecutableElement setterMethodElement = fragment.findSetterForField(field);
+        setterMethod = setterMethodElement.getSimpleName().toString();
+      }
+
       // Args Bundler
-      if (type.hasCustomBundler()) {
+      if (field.hasCustomBundler()) {
+
+        String assignmentStr;
+        if (useSetter) {
+          assignmentStr = "fragment.%s( %s.get(\"%s\", args) )";
+        } else {
+          assignmentStr = "fragment.%s = %s.get(\"%s\", args)";
+        }
 
         // Required
-        if (type.isRequired()) {
+        if (field.isRequired()) {
           jw.beginControlFlow("if (!args.containsKey(" + JavaWriter.stringLiteral(
-              CUSTOM_BUNDLER_BUNDLE_KEY + type.getKey()) + "))");
+              CUSTOM_BUNDLER_BUNDLE_KEY + field.getKey()) + "))");
           jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
-              type.getKey());
+              field.getKey());
           jw.endControlFlow();
-          jw.emitStatement("fragment.%s = %s.get(\"%s\", args)", type.getName(),
-              type.getBundlerFieldName(), type.getKey());
+          jw.emitStatement(assignmentStr, useSetter ? setterMethod : field.getName(),
+              field.getBundlerFieldName(), field.getKey());
         } else {
           // not required bundler
           jw.beginControlFlow("if (args.getBoolean(" + JavaWriter.stringLiteral(
-              CUSTOM_BUNDLER_BUNDLE_KEY + type.getKey()) + "))");
-          jw.emitStatement("fragment.%s = %s.get(\"%s\", args)", type.getName(),
-              type.getBundlerFieldName(), type.getKey());
+              CUSTOM_BUNDLER_BUNDLE_KEY + field.getKey()) + "))");
+          jw.emitStatement(assignmentStr, useSetter ? setterMethod : field.getName(),
+              field.getBundlerFieldName(), field.getKey());
 
           jw.endControlFlow();
         }
       } else {
 
         // Build in functions
-        String op = getOperation(type);
+        String op = getOperation(field);
         if (op == null) {
           throw new ProcessingException(element,
               "Can't write injector, the type is not supported by default. "
@@ -777,22 +816,29 @@ public class ArgProcessor extends AbstractProcessor {
               ArgsBundler.class.getSimpleName());
         }
 
-        String cast = "Serializable".equals(op) ? "(" + type.getType() + ") " : "";
-        if (!type.isRequired()) {
+        String cast = "Serializable".equals(op) ? "(" + field.getType() + ") " : "";
+        if (!field.isRequired()) {
           jw.beginControlFlow(
-              "if (args != null && args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+              "if (args != null && args.containsKey(" + JavaWriter.stringLiteral(field.getKey()) + "))");
         } else {
           jw.beginControlFlow(
-              "if (!args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + "))");
+              "if (!args.containsKey(" + JavaWriter.stringLiteral(field.getKey()) + "))");
           jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
-              type.getKey());
+              field.getKey());
           jw.endControlFlow();
         }
 
-        jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op,
-            type.getKey(), cast);
 
-        if (!type.isRequired()) {
+        if (useSetter) {
+          jw.emitStatement("fragment.%1$s( %4$sargs.get%2$s(\"%3$s\") )", setterMethod, op,
+              field.getKey(), cast);
+        } else {
+          jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", field.getName(), op,
+              field.getKey(), cast);
+        }
+
+
+        if (!field.isRequired()) {
           jw.endControlFlow();
         }
       }

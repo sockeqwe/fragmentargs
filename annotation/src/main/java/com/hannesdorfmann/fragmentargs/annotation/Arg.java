@@ -13,7 +13,10 @@ import java.lang.annotation.Target;
  *
  * @author Hannes Dorfmann
  */
-@Target(ElementType.FIELD) @Retention(RetentionPolicy.CLASS) @Documented public @interface Arg {
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.CLASS)
+@Documented
+public @interface Arg {
 
   /**
    * Specifies if the argument is required (default) or not

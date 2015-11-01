@@ -27,6 +27,8 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
   private String bundlerClass;
   private String bundlerFieldName;
 
+  private boolean useSetterMethod = false;
+
   public ArgumentAnnotatedField(Element element, TypeElement classElement, Arg annotation)
       throws ProcessingException {
 
@@ -36,6 +38,11 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
     this.element = element;
     this.required = annotation.required();
     this.classElement = classElement;
+
+    // Private or protected fields need a setter method
+    useSetterMethod = element.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)
+        || element.getModifiers().contains(javax.lang.model.element.Modifier.PROTECTED);
+
 
     try {
       Class<? extends ArgsBundler> clazz = annotation.bundler();
@@ -217,7 +224,8 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
     return required;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof ArgumentAnnotatedField)) return false;
 
@@ -228,11 +236,13 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
     return true;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return name.hashCode();
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return key + "/" + type;
   }
 
@@ -247,7 +257,12 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
     return type.endsWith("[]");
   }
 
-  @Override public int compareTo(ArgumentAnnotatedField o) {
+  @Override
+  public int compareTo(ArgumentAnnotatedField o) {
     return getVariableName().compareTo(o.getVariableName());
+  }
+
+  public boolean isUseSetterMethod() {
+    return useSetterMethod;
   }
 }
