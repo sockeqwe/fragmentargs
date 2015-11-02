@@ -59,6 +59,11 @@ public class ArgProcessor extends AbstractProcessor {
    */
   private static final String OPTION_SUPPORT_ANNOTATIONS = "fragmentArgsSupportAnnotations";
 
+  /**
+   * Pass a list of additional annotations to annotate the generated builder classes
+   */
+  private static final String OPTION_ADDITIONAL_BUILDER_ANNOTATIONS = "fragmentArgsBuilderAnnotations";
+
   static {
     ARGUMENT_TYPES.put("java.lang.String", "String");
     ARGUMENT_TYPES.put("int", "Int");
@@ -102,6 +107,8 @@ public class ArgProcessor extends AbstractProcessor {
   public Set<String> getSupportedOptions() {
     Set<String> suppotedOptions = new LinkedHashSet<String>();
     suppotedOptions.add(OPTION_IS_LIBRARY);
+    suppotedOptions.add(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
+    suppotedOptions.add(OPTION_SUPPORT_ANNOTATIONS);
     return suppotedOptions;
   }
 
@@ -444,6 +451,9 @@ public class ArgProcessor extends AbstractProcessor {
     Types typeUtils = processingEnv.getTypeUtils();
     Filer filer = processingEnv.getFiler();
 
+    //
+    // Processor options
+    //
     boolean isLibrary = false;
     String fragmentArgsLib = processingEnv.getOptions().get(OPTION_IS_LIBRARY);
     if (fragmentArgsLib != null && fragmentArgsLib.equalsIgnoreCase("true")) {
@@ -453,6 +463,12 @@ public class ArgProcessor extends AbstractProcessor {
     String supportAnnotationsStr = processingEnv.getOptions().get(OPTION_SUPPORT_ANNOTATIONS);
     if (supportAnnotationsStr != null && supportAnnotationsStr.equalsIgnoreCase("false")) {
       supportAnnotations = false;
+    }
+
+    String additionalBuilderAnnotations[] = {};
+    String builderAnnotationsStr = processingEnv.getOptions().get(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
+    if (builderAnnotationsStr != null && builderAnnotationsStr.length() > 0) {
+      additionalBuilderAnnotations = builderAnnotationsStr.split(" "); // White space is delimiter
     }
 
 
@@ -487,25 +503,6 @@ public class ArgProcessor extends AbstractProcessor {
               "@Arg fields must not be static (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
-
-        /*
-        if (element.getModifiers().contains(Modifier.PRIVATE)) {
-          throw new ProcessingException(element,
-              "@Arg fields must not be private (%s.%s)",
-              enclosingElement.getQualifiedName(), element);
-        }
-
-        if (element.getModifiers().contains(Modifier.PROTECTED)) {
-          throw new ProcessingException(element,
-              "@Arg fields must not be protected (%s.%s)",
-              enclosingElement.getQualifiedName(), element);
-        }
-
-        // Skip abstract classes
-        if (!enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
-          fragmentClasses.add(enclosingElement);
-        }
-        */
       }
 
       // Search for "just" @InheritedFragmentArgs --> DEPRECATED
@@ -549,7 +546,14 @@ public class ArgProcessor extends AbstractProcessor {
           if (supportAnnotations) {
             jw.emitImports("android.support.annotation.NonNull");
           }
+
           jw.emitEmptyLine();
+
+          // Additional builder annotations
+          for (String builderAnnotation : additionalBuilderAnnotations) {
+            jw.emitAnnotation(builderAnnotation);
+          }
+
           jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
 
           if (!fragment.getBundlerVariableMap().isEmpty()) {
