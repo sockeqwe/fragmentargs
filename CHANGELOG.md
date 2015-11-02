@@ -1,4 +1,4 @@
-#3.0.0 (2015-11-02)
+#3.0.0 (2015-11-02): See [this](http://hannesdorfmann.com/android/fragmentargs3/) blog post for more information
  - You now have to annotate the Fragment class itself with `@FragmentWithArgs`. For backward compatibility reasons this is not mandatory. However it's strongly recommended because in further versions of FragmentArgs this could become mandatory to support more features. 
  - Deprecated `@FragmentArgsInherited`. Use `@FragmentWithArgs(inherited = true or false)` instead.
  - Support for setter methods: Still annotate your fields with `@Arg` not the setter method. Now you can annotate `private` fields as well, but you have to provide the corresponding setter method.
