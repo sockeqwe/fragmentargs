@@ -57,7 +57,7 @@ public class ArgProcessor extends AbstractProcessor {
   /**
    * Should the builder be annotated with support annotations?
    */
-  private static final String OPTION_SUPPORT_ANNOTATIONS = "supportAnnotations";
+  private static final String OPTION_SUPPORT_ANNOTATIONS = "fragmentArgsSupportAnnotations";
 
   static {
     ARGUMENT_TYPES.put("java.lang.String", "String");
