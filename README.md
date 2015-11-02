@@ -5,6 +5,7 @@ I have written a blog entry about this library: http://hannesdorfmann.com/androi
 
 #Dependency
 Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.png)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
+[![Build Status](https://travis-ci.org/sockeqwe/fragmentargs.svg?branch=master)](https://travis-ci.org/sockeqwe/fragmentargs)
 
 To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
 
@@ -15,6 +16,7 @@ dependencies {
 }
 ```
 where you have to replace x.x.x with the latest version.
+
 
 # Changelog
 The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/master/CHANGELOG.md)
