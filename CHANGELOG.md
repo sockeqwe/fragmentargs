@@ -1,3 +1,11 @@
+#3.0.0 (2015-11-02)
+ - You now have to annotate the Fragment class itself with `@FragmentWithArgs`. For backward compatibility reasons this is not mandatory. However it's strongly recommended because in further versions of FragmentArgs this could become mandatory to support more features. 
+ - Deprecated `@FragmentArgsInherited`. Use `@FragmentWithArgs(inherited = true or false)` instead.
+ - Support for setter methods: Still annotate your fields with `@Arg` not the setter method. Now you can annotate `private` fields as well, but you have to provide the corresponding setter method.
+ - Kotlin support: Since setter methods are now supported, FragmentArgs support kotlin backing fields out of the box.
+ - Generated Builder classes are now per default annotated with `@NonNull` from androids support annotation library. Furthermore, this adds even better kotlin support since kotlin uses this annotations for null safety. You can disable this option by using annotation processor option `fragmentArgsSupportAnnotations false`. See readme for detail information.
+ - You can use annotation processor option `fragmentArgsBuilderAnnotations "com.example.MyAnnotation"` to annotate the generated builder classes with additional third party annotations. See readme for details information.
+
 #2.1.0 (2015-05-01)
  - Added `ArgsBundler` to provide a plugin mechanism for not out of the box supported data types. Two ArgsBundler are already provided `CastedArrayListArgsBundler` and `PacelerArgsBundler`.
  - Removed warning: "Could not load the generated automapping class. However, that may be ok, if you use FragmentArgs in library projects".
