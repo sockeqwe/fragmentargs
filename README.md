@@ -324,7 +324,7 @@ compile 'com.hannesdorfmann.fragmentargs:bundler-parceler:x.x.x'
 as dependency to use `ParcelerArgsBundler`.
 
 # Kotlin support
-As starting with `FragmentArgs 3.0.0` the kotlin programmin language is supported (use `kapt` instead of `apt`):
+As starting with `FragmentArgs 3.0.0` the kotlin programming language is supported (use `kapt` instead of `apt`):
 
 ```kotlin
 @FragmentWithArgs
@@ -405,7 +405,7 @@ public class FragmenInLib extends Fragment {
 The FragmentArgs annotation processor supports some options for customization. 
 
 ```groovy
-// Hugo Visser APT plugin
+// Hugo Visser's APT plugin
 apt {
   arguments {
     fragmentArgsLib true
