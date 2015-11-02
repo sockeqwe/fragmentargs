@@ -265,4 +265,8 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
   public boolean isUseSetterMethod() {
     return useSetterMethod;
   }
+
+  public boolean isPrimitive() {
+    return element.asType().getKind().isPrimitive();
+  }
 }

@@ -54,6 +54,11 @@ public class ArgProcessor extends AbstractProcessor {
    */
   private static final String OPTION_IS_LIBRARY = "fragmentArgsLib";
 
+  /**
+   * Should the builder be annotated with support annotations?
+   */
+  private static final String OPTION_SUPPORT_ANNOTATIONS = "supportAnnotations";
+
   static {
     ARGUMENT_TYPES.put("java.lang.String", "String");
     ARGUMENT_TYPES.put("int", "Int");
@@ -83,6 +88,7 @@ public class ArgProcessor extends AbstractProcessor {
 
   private TypeElement TYPE_FRAGMENT;
   private TypeElement TYPE_SUPPORT_FRAGMENT;
+  private boolean supportAnnotations = true;
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
@@ -444,6 +450,12 @@ public class ArgProcessor extends AbstractProcessor {
       isLibrary = true;
     }
 
+    String supportAnnotationsStr = processingEnv.getOptions().get(OPTION_SUPPORT_ANNOTATIONS);
+    if (supportAnnotationsStr != null && supportAnnotationsStr.equalsIgnoreCase("false")) {
+      supportAnnotations = false;
+    }
+
+
     JavaWriter jw = null;
 
     try { // Catch processing exceptions
@@ -534,6 +546,9 @@ public class ArgProcessor extends AbstractProcessor {
           jw = new JavaWriter(writer);
           writePackage(jw, fragmentClass);
           jw.emitImports("android.os.Bundle");
+          if (supportAnnotations) {
+            jw.emitImports("android.support.annotation.NonNull");
+          }
           jw.emitEmptyLine();
           jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
 
@@ -556,7 +571,8 @@ public class ArgProcessor extends AbstractProcessor {
           int index = 0;
 
           for (ArgumentAnnotatedField arg : required) {
-            args[index++] = arg.getType();
+            boolean annotate = supportAnnotations && !arg.isPrimitive();
+            args[index++] = annotate ? "@NonNull " + arg.getType() : arg.getType();
             args[index++] = arg.getVariableName();
           }
           jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
@@ -715,6 +731,8 @@ public class ArgProcessor extends AbstractProcessor {
 
   private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element,
                                                   JavaWriter jw, String[] args) throws IOException {
+
+    if (supportAnnotations) jw.emitAnnotation("NonNull");
     jw.beginMethod(element.getQualifiedName().toString(), "new" + element.getSimpleName(),
         EnumSet.of(Modifier.STATIC, Modifier.PUBLIC), args);
     StringBuilder argNames = new StringBuilder();
@@ -729,6 +747,10 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeBuildMethod(JavaWriter jw, TypeElement element) throws IOException {
+    if (supportAnnotations) {
+      jw.emitAnnotation("NonNull");
+    }
+
     jw.beginMethod(element.getSimpleName().toString(), "build", EnumSet.of(Modifier.PUBLIC));
     jw.emitStatement("%1$s fragment = new %1$s()", element.getSimpleName().toString());
     jw.emitStatement("fragment.setArguments(mArguments)");
@@ -737,8 +759,11 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeBuildSubclassMethod(JavaWriter jw, TypeElement element) throws IOException {
+    if (supportAnnotations) {
+      jw.emitAnnotation("NonNull");
+    }
     jw.beginMethod("<F extends " + element.getSimpleName().toString() + "> F", "build",
-        EnumSet.of(Modifier.PUBLIC), "F", "fragment");
+        EnumSet.of(Modifier.PUBLIC), supportAnnotations ? "@NonNull F" : "F", "fragment");
     jw.emitStatement("fragment.setArguments(mArguments)");
     jw.emitStatement("return fragment");
     jw.endMethod();
@@ -749,9 +774,11 @@ public class ArgProcessor extends AbstractProcessor {
 
     Set<ArgumentAnnotatedField> allArguments = fragment.getAll();
 
+    String fragmentType = supportAnnotations ? "@NonNull " + element.getSimpleName().toString() : element.getSimpleName().toString();
+
     jw.beginMethod("void", "injectArguments",
         EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
-        element.getSimpleName().toString(), "fragment");
+        fragmentType, "fragment");
 
 
     if (!allArguments.isEmpty()) {
@@ -849,7 +876,10 @@ public class ArgProcessor extends AbstractProcessor {
   private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg)
       throws IOException, ProcessingException {
     writer.emitEmptyLine();
-    writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), arg.getType(),
+    boolean annotate = supportAnnotations && !arg.isPrimitive();
+
+    writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC),
+        annotate ? "@NonNull " + arg.getType() : arg.getType(),
         arg.getVariableName());
     writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
     writer.emitStatement("return this");
