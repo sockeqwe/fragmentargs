@@ -24,24 +24,26 @@ The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/
 #How to use
 FragmentArgs generates Java code at compile time. It generates a `Builder` class out of your Fragment class.
 
-There are three important things to note:
- 1. Fields **MUST** have at least package (default) visibility. That means no private, protected or static fields can be annotated with `@Arg`. The generated Builder class is in the same package as the Fragment is. Therefore it needs at least package visibility to access the annotated fields.
- 2. In the Fragments `onCreate(Bundle)` method you have to call `FragmentArgs.inject(this)` to read the arguments and set the values. 
- 3. Unlike Eclipse Android Studio does not auto compile your project while saving files. So you may have to build your project to start the annotation processor which will generate the `Builder` classes for your annotated fragments.
+ 1. Annotate your `Fragment` with `@FragmentWithArgs`
+ 2. Annotate your fields with `@Args`. Fields **should** have at least package (default) visibility. Alternatively, you have to provide a setter method with at least package (default) visibility for your private `@Args` annotated fields. 
+ 3. In the Fragments `onCreate(Bundle)` method you have to call `FragmentArgs.inject(this)` to read the arguments and set the values. 
+ 4. Unlike Eclipse Android Studio does not auto compile your project while saving files. So you may have to build your project to start the annotation processor which will generate the `Builder` classes for your annotated fragments.
 
 Example:
 
 ```java
 import com.hannesdorfmann.fragmentargs.FragmentArgs;
+import com.hannesdorfmann.fragmentargs.annotation.FragmentWithArgs;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
 
+@FragmentWithArgs
 public class MyFragment extends Fragment {
 
 	@Arg
 	int id;
 	
 	@Arg
-	String title;
+	private String title; // private fields requires a setter method
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -57,7 +59,12 @@ public class MyFragment extends Fragment {
       			Toast.LENGTH_SHORT).show();
       			
       		return null;
-      }
+  }
+  
+  // Setter method for private field
+  public void setTitle(String title){
+  	this.title = title;
+  }
       
 }
 ```
@@ -97,6 +104,7 @@ You can specify a fragment argument to be optional by using `@Arg(required = fal
 
 For example:
 ```java
+@FragmentWithArgs
 public class MyOptionalFragment extends Fragment {
 
 	@Arg
@@ -119,11 +127,13 @@ public class MyOptionalFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		FragmentArgs.inject(this); // read @Arg fields
 	}
+	
+	
 	   
 }
 ```
 
-Optional Arguments will generate a `Builder` class with additional methods to set optional arguments.
+Optional arguments will generate a `Builder` class with additional methods to set optional arguments.
 
 For Example:
 ```java
@@ -176,6 +186,7 @@ public class BaseFragment extends Fragment {
 ```
 
 ```java
+@FragmentWithArgs
 public class MyFragment extends BaseFragment {
 
 	@Arg
@@ -193,6 +204,7 @@ public class MyFragment extends BaseFragment {
 ```
 
 ```java
+@FragmentWithArgs
 public class OtherFragment extends BaseFragment {
 
 	@Arg
@@ -232,9 +244,9 @@ public class B extends A {
 }
 ```
 
-There may be special edge cases where you don't want to use the fragment args from super class. Then you can use `@FragmentArgsInherited(false)`. Example:
+There may be special edge cases where you don't want to use the fragment args from super class. Then you can use `@FragmentWithArgs(inherited = false)`. Example:
 ```java
-@FragmentArgsInherited(false)
+@FragmentWithArgs(inherited = false)
 public class C extends A {
 
    @Arg int c;
@@ -273,6 +285,7 @@ public class MyFragment extends Fragment {
 
 There are already two `ArgBundler` you may find useful:
 ```java
+@FragmentWithArgs
 public class MyFragment {
    
     @Arg ( bundler = CastedArrayListArgsBundler.class )
@@ -310,9 +323,35 @@ compile 'com.hannesdorfmann.fragmentargs:bundler-parceler:x.x.x'
 ```
 as dependency to use `ParcelerArgsBundler`.
 
+# Kotlin support
+As starting with `FragmentArgs 3.0.0` the kotlin programmin language is supported (use `kapt` instead of `apt`):
+
+```kotlin
+@FragmentWithArgs
+class KotlinFragment : Fragment() {
+
+    @Arg var foo: String = "foo"
+    @Arg(required = false) lateinit var bar: String // works also with lateinit for non primitives
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        FragmentArgs.inject(this)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.fragment_kotlin, container, false)
+
+        val tv = view.findViewById(R.id.textView) as TextView
+
+        tv.text = "Foo = ${foo} , bar = ${bar}"
+        return view;
+    }
+}
+```
 
 # Support Fragment
 Fragments of the support library are supported. Therefore fields in `android.support.v4.app.Fragment` or `android.app.Fragment` can be annotated with `@Arg`.  
+
 
 # Using in library projects
 You can use FragmentArgs in library projects. However, in library project you have to inject the arguments by hand in each Fragment. First of all, you have to specify in your libraries `build.gradle` that FragmentArgs should treat this project as a library project by adding the following lines:
@@ -324,7 +363,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 // Options for annotation processor
 apt {
   arguments {
-    fragmentArgsLib = true
+    fragmentArgsLib true
   }
 }
 
@@ -340,10 +379,11 @@ dependencies {
 ```
 
 So the important thing is `fragmentArgsLib = true`. Otherwise you will get an compile error like this
-`Multiple dex files define com/hannesdorfmann/fragmentargs/AutoFragmentArgInjector`  in your app project that uses FragmentArgs and your library (which uses FragmentArgs as well).
+`Multiple dex files define com/hannesdorfmann/fragmentargs/AutoFragmentArgInjector`  in your app project that uses FrgmentArgs and your library (which uses FragmentArgs as well).
 
 Next you have to manually inject the FragmentArguments in your Fragment which is part of your library. So you **can not use** `FragmentArgs.inject()` but you have to use explicit the generated FragmentBuilder class. Example:
 ```java 
+@FragmentWithArgs
 public class FragmenInLib extends Fragment {
 
   @Arg String foo;
@@ -360,6 +400,34 @@ public class FragmenInLib extends Fragment {
 }
 
 ``` 
+
+# Annotation Processor Options
+The FragmentArgs annotation processor supports some options for customization. 
+
+```groovy
+// Hugo Visser APT plugin
+apt {
+  arguments {
+    fragmentArgsLib true
+    fragmentArgsSupportAnnotations false
+    fragmentArgsBuilderAnnotations "hugo.weaving.DebugLog com.foo.OtherAnnotation"
+  }
+}
+
+// Kotlin Annotation processor
+kapt {
+  generateStubs = true
+  arguments {
+    arg("fragmentArgsLib", true)
+    arg("fragmentArgsSupportAnnotations", false)
+    arg("fragmentArgsBuilderAnnotations", "hugo.weaving.DebugLog com.foo.OtherAnnotation")
+  }
+}
+```
+
+ - **fragmentArgsLib**: Already described in _"Using in library projects"_
+ - **fragmentArgsSupportAnnotations**: As default the methods of the generated `Builder` are annotated with the annotations from support library like `@NonNull` etc. You can disable that feature by passing `false`.
+ - **fragmentArgsBuilderAnnotations**: You can add additional annotations to the generated `Builder` classes. For example you can add `@DebugLog` annotation to the `Builder` classes to use Jake Wharton's [Hugo](https://github.com/JakeWharton/hugo) for logging in debug builds. You have to pass a string of a full qualified annotation class name. You can supply multiple annotations by using a white space between each one.
 
 #Proguard
 ```
