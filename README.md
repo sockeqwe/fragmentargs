@@ -24,7 +24,7 @@ The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/
 #How to use
 FragmentArgs generates Java code at compile time. It generates a `Builder` class out of your Fragment class.
 
- 1. Annotate your `Fragment` with `@FragmentWithArgs`
+ 1. Annotate your `Fragment` with `@FragmentWithArgs`.  For backward compatibility reasons this is not mandatory. However it's strongly recommended because in further versions of FragmentArgs this could become mandatory to support more features.
  2. Annotate your fields with `@Args`. Fields **should** have at least package (default) visibility. Alternatively, you have to provide a setter method with at least package (default) visibility for your private `@Args` annotated fields. 
  3. In the Fragments `onCreate(Bundle)` method you have to call `FragmentArgs.inject(this)` to read the arguments and set the values. 
  4. Unlike Eclipse Android Studio does not auto compile your project while saving files. So you may have to build your project to start the annotation processor which will generate the `Builder` classes for your annotated fragments.
