@@ -796,6 +796,8 @@ public class ArgProcessor extends AbstractProcessor {
       }
     }
 
+
+    int setterAssignmentHelperCounter = 0;
     for (ArgumentAnnotatedField field : allArguments) {
       jw.emitEmptyLine();
 
@@ -811,9 +813,12 @@ public class ArgProcessor extends AbstractProcessor {
       // Args Bundler
       if (field.hasCustomBundler()) {
 
+        String setterAssignmentHelperStr = null;
         String assignmentStr;
         if (useSetter) {
-          assignmentStr = "fragment.%s( %s.get(\"%s\", args) )";
+          setterAssignmentHelperStr = field.getType() + " value" + setterAssignmentHelperCounter + " =  %s.get(\"%s\", args)";
+          assignmentStr = "fragment.%s( value" + setterAssignmentHelperCounter + " )";
+          setterAssignmentHelperCounter++;
         } else {
           assignmentStr = "fragment.%s = %s.get(\"%s\", args)";
         }
@@ -825,14 +830,25 @@ public class ArgProcessor extends AbstractProcessor {
           jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")",
               field.getKey());
           jw.endControlFlow();
-          jw.emitStatement(assignmentStr, useSetter ? setterMethod : field.getName(),
-              field.getBundlerFieldName(), field.getKey());
+          if (useSetter) {
+            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(), field.getKey());
+            jw.emitStatement(assignmentStr, setterMethod);
+          } else {
+            jw.emitStatement(assignmentStr, field.getName(),
+                field.getBundlerFieldName(), field.getKey());
+          }
         } else {
           // not required bundler
           jw.beginControlFlow("if (args.getBoolean(" + JavaWriter.stringLiteral(
               CUSTOM_BUNDLER_BUNDLE_KEY + field.getKey()) + "))");
-          jw.emitStatement(assignmentStr, useSetter ? setterMethod : field.getName(),
-              field.getBundlerFieldName(), field.getKey());
+
+          if (useSetter) {
+            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(), field.getKey());
+            jw.emitStatement(assignmentStr, setterMethod);
+          } else {
+            jw.emitStatement(assignmentStr, field.getName(),
+                field.getBundlerFieldName(), field.getKey());
+          }
 
           jw.endControlFlow();
         }
