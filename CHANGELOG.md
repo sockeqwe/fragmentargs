@@ -1,3 +1,6 @@
+#3.0.1 (2015-12-28): 
+ - Minor Bugfix (#35) when using custom `Bundler and setter methods (because annotated field is private) java compiler could not determine the generic type of setter parameter.
+ 
 #3.0.0 (2015-11-02): See [this](http://hannesdorfmann.com/android/fragmentargs3/) blog post for more information
  - You now have to annotate the Fragment class itself with `@FragmentWithArgs`. For backward compatibility reasons this is not mandatory. However it's strongly recommended because in further versions of FragmentArgs this could become mandatory to support more features. 
  - Deprecated `@FragmentArgsInherited`. Use `@FragmentWithArgs(inherited = true or false)` instead.
