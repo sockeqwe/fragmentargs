@@ -1,7 +1,7 @@
 #FragmentArgs
 Annotation Processor to create arguments for android fragments without using reflections.
 
-I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs/
+I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs
 
 #Dependency
 Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.png)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
