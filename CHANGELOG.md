@@ -1,3 +1,6 @@
+#3.0.2 (2016-03--04):
+ - Hotfix (#47): There was a bug that Builder has not been generated when Fragment have no (zero) arguments 
+ 
 #3.0.1 (2015-12-28): 
  - Minor Bugfix (#35): when using custom `Bundler` and setter methods (because annotated field is private) java compiler could not determine the generic type of setter method parameter.
  
