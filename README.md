@@ -46,26 +46,26 @@ public class MyFragment extends Fragment {
 	private String title; // private fields requires a setter method
 
 	@Override
-	public void onCreate(Bundle savedInstanceState){
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		FragmentArgs.inject(this); // read @Arg fields
 	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, 
-		ViewGroup container, Bundle savedInstanceState) {
-      
-      		Toast.makeText(getActivity(), "Hello " + title, 
-      			Toast.LENGTH_SHORT).show();
-      			
+			ViewGroup container, Bundle savedInstanceState) {
+	
+      		Toast.makeText(getActivity(), "Hello " + title,
+      				Toast.LENGTH_SHORT).show();
+      	
       		return null;
-  }
+	}
   
-  // Setter method for private field
-  public void setTitle(String title){
-  	this.title = title;
-  }
-      
+	// Setter method for private field
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
 }
 ```
 
@@ -128,8 +128,6 @@ public class MyOptionalFragment extends Fragment {
 		FragmentArgs.inject(this); // read @Arg fields
 	}
 	
-	
-	   
 }
 ```
 
@@ -159,7 +157,6 @@ public class MyActivity extends Activity {
 			.beginTransaction()
 			.replace(R.id.container, fragment)
 			.commit();
-		
 	}
 
 }
@@ -194,11 +191,10 @@ public class MyFragment extends BaseFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, 
-		ViewGroup container, Bundle savedInstanceState) {
+			ViewGroup container, Bundle savedInstanceState) {
       
       		Toast.makeText(getActivity(), "Hello " + title, 
       			Toast.LENGTH_SHORT).show();
-      
       }
 }
 ```
@@ -212,11 +208,10 @@ public class OtherFragment extends BaseFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, 
-		ViewGroup container, Bundle savedInstanceState) {
+			ViewGroup container, Bundle savedInstanceState) {
       
       		Toast.makeText(getActivity(), "Hello " + foo, 
       			Toast.LENGTH_SHORT).show();
-      
       }
 }
 ```
