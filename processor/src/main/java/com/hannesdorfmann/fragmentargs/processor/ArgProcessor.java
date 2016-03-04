@@ -99,6 +99,7 @@ public class ArgProcessor extends AbstractProcessor {
   public Set<String> getSupportedAnnotationTypes() {
     Set<String> supportTypes = new LinkedHashSet<String>();
     supportTypes.add(Arg.class.getCanonicalName());
+    supportTypes.add(FragmentWithArgs.class.getCanonicalName());
     supportTypes.add(FragmentArgsInherited.class.getCanonicalName());
     return supportTypes;
   }
