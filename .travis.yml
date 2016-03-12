@@ -16,9 +16,9 @@ jdk:
 env:
   global:
   - MAVEN_OPTS="-Xmx256M"
-  - secure: "OFbKmMT6TgYUrW/++m8IrtINSqU1zumJVv3fvew7mI/YJ/HVjyrCG45I8ds34F6tgm5HGRM0H2geyOOVuF7K/yfRNSlYdN57HqO430zCbqIVP29uTqyu98krDeDaocNjtRRLZ1BjGg6v2b2+gX5zAktCPrfykVDPWBGQPOY08W4="
+  - secure: "Kz0ki/rdRWAfhCv+33WXoD421OFsmJ8yf/CWo9niB/3tYramqv6OAKvinHSrp2It2RLcStfldC2SKmKa3KUaRmfawImsITzXkXqR6M4VC/p6x4J41euN//EoY0vOgvSB+Q8vLgK8PBReKMtIxU0CWrv39wzJpG4fJSDHtToO4ZQ="
   - secure: "EO4lL2SwL4adcF8F5K+XiU1TeDjFmdUDJQN/HoPxh3TBNrmqV8t40vc1TRQovh0ab+SNP3+TzZuPdWV0H1fDWKtdlROF5rlLKpgZotL2nTX820AbAnIPaTDmVfISanjJ8y7JIBWy2y64t7UH6CxnKWYWhnBas3I/tFxDWN4Ar0A="
-  
+
 sudo: false
 
 cache:
