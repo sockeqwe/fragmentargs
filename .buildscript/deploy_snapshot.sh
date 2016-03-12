@@ -11,6 +11,7 @@ BRANCH="master"
 
 set -e
 echo "starting deploy snapshot script"
+echo $env.CI_DEPLOY_USERNAME
 
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
   echo "Skipping snapshot deployment: wrong repository. Expected '$SLUG' but was '$TRAVIS_REPO_SLUG'."
