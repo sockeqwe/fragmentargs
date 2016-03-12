@@ -192,6 +192,12 @@ public class ArgProcessor extends AbstractProcessor {
 
     jw.emitEmptyLine();
 
+    if (!arg.isPrimitive()) {
+      jw.beginControlFlow("if (%s == null)", arg.getName());
+      jw.emitStatement("throw new NullPointerException(\"Argument '%s' must not be null.\")", arg.getName());
+      jw.endControlFlow();
+    }
+
     if (arg.hasCustomBundler()) {
       jw.emitStatement("%s.putBoolean(\"%s\", true)", bundleVariable,
           CUSTOM_BUNDLER_BUNDLE_KEY + arg.getKey());
