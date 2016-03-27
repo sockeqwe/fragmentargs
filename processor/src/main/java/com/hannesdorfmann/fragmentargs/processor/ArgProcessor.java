@@ -62,7 +62,8 @@ public class ArgProcessor extends AbstractProcessor {
   /**
    * Pass a list of additional annotations to annotate the generated builder classes
    */
-  private static final String OPTION_ADDITIONAL_BUILDER_ANNOTATIONS = "fragmentArgsBuilderAnnotations";
+  private static final String OPTION_ADDITIONAL_BUILDER_ANNOTATIONS =
+      "fragmentArgsBuilderAnnotations";
 
   static {
     ARGUMENT_TYPES.put("java.lang.String", "String");
@@ -121,7 +122,6 @@ public class ArgProcessor extends AbstractProcessor {
     typeUtils = env.getTypeUtils();
     filer = env.getFiler();
 
-
     TYPE_FRAGMENT = elementUtils.getTypeElement("android.app.Fragment");
     TYPE_SUPPORT_FRAGMENT =
         elementUtils.getTypeElement("android.support.v4.app.Fragment");
@@ -140,11 +140,11 @@ public class ArgProcessor extends AbstractProcessor {
     Elements elements = processingEnv.getElementUtils();
     TypeMirror type = arg.getElement().asType();
     Types types = processingEnv.getTypeUtils();
-    String[] arrayListTypes = new String[]{
+    String[] arrayListTypes = new String[] {
         String.class.getName(), Integer.class.getName(), CharSequence.class.getName()
     };
     String[] arrayListOps =
-        new String[]{"StringArrayList", "IntegerArrayList", "CharSequenceArrayList"};
+        new String[] {"StringArrayList", "IntegerArrayList", "CharSequenceArrayList"};
     for (int i = 0; i < arrayListTypes.length; i++) {
       TypeMirror tm = getArrayListType(arrayListTypes[i]);
       if (types.isAssignable(type, tm)) {
@@ -188,13 +188,14 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
-                                   ArgumentAnnotatedField arg) throws IOException, ProcessingException {
+      ArgumentAnnotatedField arg) throws IOException, ProcessingException {
 
     jw.emitEmptyLine();
 
     if (!arg.isPrimitive()) {
-      jw.beginControlFlow("if (%s == null)", arg.getName());
-      jw.emitStatement("throw new NullPointerException(\"Argument '%s' must not be null.\")", arg.getName());
+      jw.beginControlFlow("if (%s == null)", sourceVariable);
+      jw.emitStatement("throw new NullPointerException(\"Argument '%s' must not be null.\")",
+          arg.getName());
       jw.endControlFlow();
     }
 
@@ -237,7 +238,8 @@ public class ArgProcessor extends AbstractProcessor {
    * Scans for @Arg annotations in the class itself and all super classes (complete inheritance
    * hierarchy)
    */
-  private AnnotatedFragment collectArgumentsForTypeInclSuperClasses(TypeElement type) throws ProcessingException {
+  private AnnotatedFragment collectArgumentsForTypeInclSuperClasses(TypeElement type)
+      throws ProcessingException {
 
     AnnotatedFragment fragment = new AnnotatedFragment(type);
     TypeElement currentClass = type;
@@ -276,7 +278,7 @@ public class ArgProcessor extends AbstractProcessor {
    * already defined in a super class
    */
   private String getErrorMessageDuplicatedField(AnnotatedFragment fragment,
-                                                TypeElement problemClass, String fieldName) {
+      TypeElement problemClass, String fieldName) {
 
     String base =
         "A field with the name '%s' in class %s is already annotated with @%s in super class %s ! "
@@ -368,7 +370,7 @@ public class ArgProcessor extends AbstractProcessor {
    * will be printed
    */
   private void addAnnotatedField(ArgumentAnnotatedField annotatedField, AnnotatedFragment fragment,
-                                 Arg annotation) throws ProcessingException {
+      Arg annotation) throws ProcessingException {
 
     if (fragment.containsField(annotatedField)) {
       // A field already with the name is here
@@ -415,7 +417,9 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     if (fragmentWithArgs != null && inheritedFragmentArgs != null) {
-      throw new ProcessingException(type, "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s only.", type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
+      throw new ProcessingException(type,
+          "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s only.",
+          type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
           .getSimpleName(), FragmentWithArgs.class.getSimpleName());
     }
 
@@ -450,7 +454,6 @@ public class ArgProcessor extends AbstractProcessor {
     return fragment;
   }
 
-
   @Override
   public boolean process(Set<? extends TypeElement> type, RoundEnvironment env) {
 
@@ -473,28 +476,31 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     String additionalBuilderAnnotations[] = {};
-    String builderAnnotationsStr = processingEnv.getOptions().get(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
+    String builderAnnotationsStr =
+        processingEnv.getOptions().get(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
     if (builderAnnotationsStr != null && builderAnnotationsStr.length() > 0) {
       additionalBuilderAnnotations = builderAnnotationsStr.split(" "); // White space is delimiter
     }
 
+    List<ProcessingException> processingExceptions = new ArrayList<ProcessingException>();
 
     JavaWriter jw = null;
 
-    try { // Catch processing exceptions
+    // REMEMBER: It's a SET! it uses .equals() .hashCode() to determine if element already in set
+    Set<TypeElement> fragmentClasses = new HashSet<TypeElement>();
 
-      // REMEMBER: It's a SET! it uses .equals() .hashCode() to determine if element already in set
-      Set<TypeElement> fragmentClasses = new HashSet<TypeElement>();
+    Element[] origHelper = null;
 
-      Element[] origHelper = null;
+    // Search for @Arg fields
+    for (Element element : env.getElementsAnnotatedWith(Arg.class)) {
 
-      // Search for @Arg fields
-      for (Element element : env.getElementsAnnotatedWith(Arg.class)) {
+      try {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Check if its a fragment
         if (!isFragmentClass(enclosingElement, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
-          throw new ProcessingException(element, "@Arg can only be used on fragment fields (%s.%s)",
+          throw new ProcessingException(element,
+              "@Arg can only be used on fragment fields (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
 
@@ -510,134 +516,156 @@ public class ArgProcessor extends AbstractProcessor {
               "@Arg fields must not be static (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
+      } catch (ProcessingException e) {
+        processingExceptions.add(e);
       }
+    }
 
-      // Search for "just" @InheritedFragmentArgs --> DEPRECATED
-      scanForAnnotatedFragmentClasses(env, FragmentArgsInherited.class, fragmentClasses);
+    // Search for "just" @InheritedFragmentArgs --> DEPRECATED
+    for (Element element : env.getElementsAnnotatedWith(FragmentArgsInherited.class)) {
+      try {
+        scanForAnnotatedFragmentClasses(env, FragmentArgsInherited.class, fragmentClasses, element);
+      } catch (ProcessingException e) {
+        processingExceptions.add(e);
+      }
+    }
 
-      // Search for "just" @FragmentWithArgs
-      scanForAnnotatedFragmentClasses(env, FragmentWithArgs.class, fragmentClasses);
+    // Search for "just" @FragmentWithArgs
+    for (Element element : env.getElementsAnnotatedWith(FragmentWithArgs.class)) {
+      try {
+        scanForAnnotatedFragmentClasses(env, FragmentWithArgs.class, fragmentClasses, element);
+      } catch (ProcessingException e) {
+        processingExceptions.add(e);
+      }
+    }
 
-      // Store the key - value for the generated FragmentArtMap class
-      Map<String, String> autoMapping = new HashMap<String, String>();
+    // Store the key - value for the generated FragmentArtMap class
+    Map<String, String> autoMapping = new HashMap<String, String>();
 
-      for (TypeElement fragmentClass : fragmentClasses) {
-        try {
+    for (TypeElement fragmentClass : fragmentClasses) {
+      try {
 
-          AnnotatedFragment fragment = collectArgumentsForType(fragmentClass);
+        AnnotatedFragment fragment = collectArgumentsForType(fragmentClass);
 
-          String builder = fragment.getSimpleName() + "Builder";
-          List<Element> originating = new ArrayList<Element>(10);
-          originating.add(fragmentClass);
-          TypeMirror superClass = fragmentClass.getSuperclass();
-          while (superClass.getKind() != TypeKind.NONE) {
-            TypeElement element = (TypeElement) typeUtils.asElement(superClass);
-            if (element.getQualifiedName().toString().startsWith("android.")) {
-              break;
-            }
-            originating.add(element);
-            superClass = element.getSuperclass();
+        String builder = fragment.getSimpleName() + "Builder";
+        List<Element> originating = new ArrayList<Element>(10);
+        originating.add(fragmentClass);
+        TypeMirror superClass = fragmentClass.getSuperclass();
+        while (superClass.getKind() != TypeKind.NONE) {
+          TypeElement element = (TypeElement) typeUtils.asElement(superClass);
+          if (element.getQualifiedName().toString().startsWith("android.")) {
+            break;
           }
+          originating.add(element);
+          superClass = element.getSuperclass();
+        }
 
-          String qualifiedFragmentName = fragment.getQualifiedName().toString();
-          String qualifiedBuilderName = qualifiedFragmentName + "Builder";
+        String qualifiedFragmentName = fragment.getQualifiedName().toString();
+        String qualifiedBuilderName = qualifiedFragmentName + "Builder";
 
-          Element[] orig = originating.toArray(new Element[originating.size()]);
-          origHelper = orig;
+        Element[] orig = originating.toArray(new Element[originating.size()]);
+        origHelper = orig;
 
-          JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName, orig);
-          Writer writer = jfo.openWriter();
-          jw = new JavaWriter(writer);
-          writePackage(jw, fragmentClass);
-          jw.emitImports("android.os.Bundle");
-          if (supportAnnotations) {
-            jw.emitImports("android.support.annotation.NonNull");
-          }
+        JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName, orig);
+        Writer writer = jfo.openWriter();
+        jw = new JavaWriter(writer);
+        writePackage(jw, fragmentClass);
+        jw.emitImports("android.os.Bundle");
+        if (supportAnnotations) {
+          jw.emitImports("android.support.annotation.NonNull");
+        }
 
+        jw.emitEmptyLine();
+
+        // Additional builder annotations
+        for (String builderAnnotation : additionalBuilderAnnotations) {
+          jw.emitAnnotation(builderAnnotation);
+        }
+
+        jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+
+        if (!fragment.getBundlerVariableMap().isEmpty()) {
           jw.emitEmptyLine();
-
-          // Additional builder annotations
-          for (String builderAnnotation : additionalBuilderAnnotations) {
-            jw.emitAnnotation(builderAnnotation);
+          for (Map.Entry<String, String> e : fragment.getBundlerVariableMap().entrySet()) {
+            jw.emitField(e.getKey(), e.getValue(),
+                EnumSet.of(Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC),
+                "new " + e.getKey() + "()");
           }
+        }
+        jw.emitEmptyLine();
+        jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL),
+            "new Bundle()");
+        jw.emitEmptyLine();
 
-          jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+        Set<ArgumentAnnotatedField> required = fragment.getRequiredFields();
 
-          if (!fragment.getBundlerVariableMap().isEmpty()) {
-            jw.emitEmptyLine();
-            for (Map.Entry<String, String> e : fragment.getBundlerVariableMap().entrySet()) {
-              jw.emitField(e.getKey(), e.getValue(),
-                  EnumSet.of(Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC),
-                  "new " + e.getKey() + "()");
-            }
-          }
+        String[] args = new String[required.size() * 2];
+        int index = 0;
+
+        for (ArgumentAnnotatedField arg : required) {
+          boolean annotate = supportAnnotations && !arg.isPrimitive();
+          args[index++] = annotate ? "@NonNull " + arg.getType() : arg.getType();
+          args[index++] = arg.getVariableName();
+        }
+        jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
+
+        for (ArgumentAnnotatedField arg : required) {
+          writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
+        }
+
+        jw.endMethod();
+
+        if (!required.isEmpty()) {
           jw.emitEmptyLine();
-          jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL),
-              "new Bundle()");
-          jw.emitEmptyLine();
+          writeNewFragmentWithRequiredMethod(builder, fragmentClass, jw, args);
+        }
 
-          Set<ArgumentAnnotatedField> required = fragment.getRequiredFields();
+        Set<ArgumentAnnotatedField> optionalArguments = fragment.getOptionalFields();
 
-          String[] args = new String[required.size() * 2];
-          int index = 0;
+        for (ArgumentAnnotatedField arg : optionalArguments) {
+          writeBuilderMethod(builder, jw, arg);
+        }
 
-          for (ArgumentAnnotatedField arg : required) {
-            boolean annotate = supportAnnotations && !arg.isPrimitive();
-            args[index++] = annotate ? "@NonNull " + arg.getType() : arg.getType();
-            args[index++] = arg.getVariableName();
+        jw.emitEmptyLine();
+        writeInjectMethod(jw, fragmentClass, fragment);
+
+        jw.emitEmptyLine();
+        writeBuildMethod(jw, fragmentClass);
+
+        jw.emitEmptyLine();
+        writeBuildSubclassMethod(jw, fragmentClass);
+        jw.endType();
+
+        autoMapping.put(qualifiedFragmentName, qualifiedBuilderName);
+      } catch (IOException e) {
+        processingExceptions.add(
+            new ProcessingException(fragmentClass, "Unable to write builder for type %s: %s",
+                fragmentClass, e.getMessage()));
+      } catch (ProcessingException e) {
+        processingExceptions.add(e);
+      } finally {
+        if (jw != null) {
+          try {
+            jw.close();
+          } catch (IOException e1) {
+            processingExceptions.add(new ProcessingException(fragmentClass,
+                "Unable to close javawriter while generating builder for type %s: %s",
+                fragmentClass, e1.getMessage()));
           }
-          jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
-
-          for (ArgumentAnnotatedField arg : required) {
-            writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
-          }
-
-          jw.endMethod();
-
-          if (!required.isEmpty()) {
-            jw.emitEmptyLine();
-            writeNewFragmentWithRequiredMethod(builder, fragmentClass, jw, args);
-          }
-
-          Set<ArgumentAnnotatedField> optionalArguments = fragment.getOptionalFields();
-
-          for (ArgumentAnnotatedField arg : optionalArguments) {
-            writeBuilderMethod(builder, jw, arg);
-          }
-
-          jw.emitEmptyLine();
-          writeInjectMethod(jw, fragmentClass, fragment);
-
-          jw.emitEmptyLine();
-          writeBuildMethod(jw, fragmentClass);
-
-          jw.emitEmptyLine();
-          writeBuildSubclassMethod(jw, fragmentClass);
-          jw.endType();
-          jw.close();
-
-          autoMapping.put(qualifiedFragmentName, qualifiedBuilderName);
-        } catch (IOException e) {
-          throw new ProcessingException(fragmentClass, "Unable to write builder for type %s: %s",
-              fragmentClass, e.getMessage());
         }
       }
+    }
 
-      // Write the automapping class
-      if (origHelper != null && !isLibrary) {
+    // Write the automapping class
+    if (origHelper != null && !isLibrary) {
+      try {
         writeAutoMapping(autoMapping, origHelper);
+      } catch (ProcessingException e) {
+        processingExceptions.add(e);
       }
-    } catch (ProcessingException e) {
-      // print error
-      if (jw != null) {
+    }
 
-        // Do cleanup if not closed yet
-        try {
-          jw.close();
-        } catch (Exception catched) {
-        }
-      }
-
+    for (ProcessingException e : processingExceptions) {
       error(e);
     }
 
@@ -653,27 +681,28 @@ public class ArgProcessor extends AbstractProcessor {
    * @param fragmentClasses The set of classes already scanned (containing annotations)
    * @throws ProcessingException
    */
-  private void scanForAnnotatedFragmentClasses(RoundEnvironment env, Class<? extends Annotation> annotationClass, Set<TypeElement> fragmentClasses) throws ProcessingException {
-    for (Element element : env.getElementsAnnotatedWith(annotationClass)) {
+  private void scanForAnnotatedFragmentClasses(RoundEnvironment env,
+      Class<? extends Annotation> annotationClass, Set<TypeElement> fragmentClasses,
+      Element element)
+      throws ProcessingException {
 
-      if (element.getKind() != ElementKind.CLASS) {
-        throw new ProcessingException(element, "%s can only be applied on Fragment classes",
-            annotationClass.getSimpleName());
-      }
+    if (element.getKind() != ElementKind.CLASS) {
+      throw new ProcessingException(element, "%s can only be applied on Fragment classes",
+          annotationClass.getSimpleName());
+    }
 
-      TypeElement classElement = (TypeElement) element;
+    TypeElement classElement = (TypeElement) element;
 
-      // Check if its a fragment
-      if (!isFragmentClass(element, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
-        throw new ProcessingException(element,
-            "%s can only be used on fragments, but %s is not a subclass of fragment",
-            annotationClass.getSimpleName(), classElement.getQualifiedName());
-      }
+    // Check if its a fragment
+    if (!isFragmentClass(element, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
+      throw new ProcessingException(element,
+          "%s can only be used on fragments, but %s is not a subclass of fragment",
+          annotationClass.getSimpleName(), classElement.getQualifiedName());
+    }
 
-      // Skip abstract classes
-      if (!classElement.getModifiers().contains(Modifier.ABSTRACT)) {
-        fragmentClasses.add(classElement);
-      }
+    // Skip abstract classes
+    if (!classElement.getModifiers().contains(Modifier.ABSTRACT)) {
+      fragmentClasses.add(classElement);
     }
   }
 
@@ -681,7 +710,7 @@ public class ArgProcessor extends AbstractProcessor {
    * Checks if the given element is in a valid Fragment class
    */
   private boolean isFragmentClass(Element classElement, TypeElement fragmentType,
-                                  TypeElement supportFragmentType) {
+      TypeElement supportFragmentType) {
 
     return (fragmentType != null && typeUtils.isSubtype(classElement.asType(),
         fragmentType.asType())) || (supportFragmentType != null && typeUtils.isSubtype(
@@ -741,7 +770,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element,
-                                                  JavaWriter jw, String[] args) throws IOException {
+      JavaWriter jw, String[] args) throws IOException {
 
     if (supportAnnotations) jw.emitAnnotation("NonNull");
     jw.beginMethod(element.getQualifiedName().toString(), "new" + element.getSimpleName(),
@@ -781,16 +810,16 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   private void writeInjectMethod(JavaWriter jw, TypeElement element,
-                                 AnnotatedFragment fragment) throws IOException, ProcessingException {
+      AnnotatedFragment fragment) throws IOException, ProcessingException {
 
     Set<ArgumentAnnotatedField> allArguments = fragment.getAll();
 
-    String fragmentType = supportAnnotations ? "@NonNull " + element.getSimpleName().toString() : element.getSimpleName().toString();
+    String fragmentType = supportAnnotations ? "@NonNull " + element.getSimpleName().toString()
+        : element.getSimpleName().toString();
 
     jw.beginMethod("void", "injectArguments",
         EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
         fragmentType, "fragment");
-
 
     if (!allArguments.isEmpty()) {
       jw.emitStatement("Bundle args = fragment.getArguments()");
@@ -798,16 +827,15 @@ public class ArgProcessor extends AbstractProcessor {
       // Check if bundle is null only if at least one required field
       if (!fragment.getRequiredFields().isEmpty()) {
         jw.beginControlFlow("if (args == null)");
-        jw.emitStatement("throw new IllegalStateException(\"No arguments set. Have you setup this Fragment with the corresponding FragmentArgs Builder? \")");
+        jw.emitStatement(
+            "throw new IllegalStateException(\"No arguments set. Have you setup this Fragment with the corresponding FragmentArgs Builder? \")");
         jw.endControlFlow();
       }
     }
 
-
     int setterAssignmentHelperCounter = 0;
     for (ArgumentAnnotatedField field : allArguments) {
       jw.emitEmptyLine();
-
 
       // Check if the given setter is available
       String setterMethod = null;
@@ -823,7 +851,10 @@ public class ArgProcessor extends AbstractProcessor {
         String setterAssignmentHelperStr = null;
         String assignmentStr;
         if (useSetter) {
-          setterAssignmentHelperStr = field.getType() + " value" + setterAssignmentHelperCounter + " =  %s.get(\"%s\", args)";
+          setterAssignmentHelperStr = field.getType()
+              + " value"
+              + setterAssignmentHelperCounter
+              + " =  %s.get(\"%s\", args)";
           assignmentStr = "fragment.%s( value" + setterAssignmentHelperCounter + " )";
           setterAssignmentHelperCounter++;
         } else {
@@ -838,7 +869,8 @@ public class ArgProcessor extends AbstractProcessor {
               field.getKey());
           jw.endControlFlow();
           if (useSetter) {
-            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(), field.getKey());
+            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(),
+                field.getKey());
             jw.emitStatement(assignmentStr, setterMethod);
           } else {
             jw.emitStatement(assignmentStr, field.getName(),
@@ -850,7 +882,8 @@ public class ArgProcessor extends AbstractProcessor {
               CUSTOM_BUNDLER_BUNDLE_KEY + field.getKey()) + "))");
 
           if (useSetter) {
-            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(), field.getKey());
+            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(),
+                field.getKey());
             jw.emitStatement(assignmentStr, setterMethod);
           } else {
             jw.emitStatement(assignmentStr, field.getName(),
@@ -873,7 +906,9 @@ public class ArgProcessor extends AbstractProcessor {
         String cast = "Serializable".equals(op) ? "(" + field.getType() + ") " : "";
         if (!field.isRequired()) {
           jw.beginControlFlow(
-              "if (args != null && args.containsKey(" + JavaWriter.stringLiteral(field.getKey()) + "))");
+              "if (args != null && args.containsKey("
+                  + JavaWriter.stringLiteral(field.getKey())
+                  + "))");
         } else {
           jw.beginControlFlow(
               "if (!args.containsKey(" + JavaWriter.stringLiteral(field.getKey()) + "))");
@@ -882,7 +917,6 @@ public class ArgProcessor extends AbstractProcessor {
           jw.endControlFlow();
         }
 
-
         if (useSetter) {
           jw.emitStatement("fragment.%1$s( %4$sargs.get%2$s(\"%3$s\") )", setterMethod, op,
               field.getKey(), cast);
@@ -890,7 +924,6 @@ public class ArgProcessor extends AbstractProcessor {
           jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", field.getName(), op,
               field.getKey(), cast);
         }
-
 
         if (!field.isRequired()) {
           jw.endControlFlow();
