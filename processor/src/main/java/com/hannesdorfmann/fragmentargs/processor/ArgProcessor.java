@@ -548,6 +548,8 @@ public class ArgProcessor extends AbstractProcessor {
     Map<String, String> autoMapping = new HashMap<String, String>();
 
     for (TypeElement fragmentClass : fragmentClasses) {
+
+      JavaFileObject jfo = null;
       try {
 
         AnnotatedFragment fragment = collectArgumentsForType(fragmentClass);
@@ -571,7 +573,7 @@ public class ArgProcessor extends AbstractProcessor {
         Element[] orig = originating.toArray(new Element[originating.size()]);
         origHelper = orig;
 
-        JavaFileObject jfo = filer.createSourceFile(qualifiedBuilderName, orig);
+        jfo = filer.createSourceFile(qualifiedBuilderName, orig);
         Writer writer = jfo.openWriter();
         jw = new JavaWriter(writer);
         writePackage(jw, fragmentClass);
@@ -648,6 +650,9 @@ public class ArgProcessor extends AbstractProcessor {
                 fragmentClass, e.getMessage()));
       } catch (ProcessingException e) {
         processingExceptions.add(e);
+        if (jfo != null) {
+          jfo.delete();
+        }
       } finally {
         if (jw != null) {
           try {
