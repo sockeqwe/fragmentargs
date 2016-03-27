@@ -516,6 +516,11 @@ public class ArgProcessor extends AbstractProcessor {
               "@Arg fields must not be static (%s.%s)",
               enclosingElement.getQualifiedName(), element);
         }
+
+        // Skip abstract classes
+        if (!enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
+          fragmentClasses.add(enclosingElement);
+        }
       } catch (ProcessingException e) {
         processingExceptions.add(e);
       }
@@ -665,6 +670,7 @@ public class ArgProcessor extends AbstractProcessor {
       }
     }
 
+    // Print errors
     for (ProcessingException e : processingExceptions) {
       error(e);
     }
