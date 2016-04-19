@@ -255,14 +255,14 @@ In this case only `c` will be argument of class C and the arguments of super cla
 FragmentArgs supports the most common data structures that you can put in a `Bundle` and hence set as arguments for a Fragment. The type of the `@Arg` annotated field is used for that. If you want to set not a out of the box supported data type (like a class you cant make `Parcelable` for whatever reason) as argument you can specify your own `ArgsBundler`.
 
 ```java
-public class DateArgsBundler implements DateArgsBundler<Foo>{
+public class DateArgsBundler implements DateArgsBundler<Date>{
 
     @Override public void put(String key, Date value, Bundle bundle) {
         
         bundle.putLong(key, value.getTime());
     }
 
-    @Override public Foo get(String key, Bundle bundle) {
+    @Override public Date get(String key, Bundle bundle) {
         
         long timestamp = bundle.getLong(key);
         return new Date(timestamp);
