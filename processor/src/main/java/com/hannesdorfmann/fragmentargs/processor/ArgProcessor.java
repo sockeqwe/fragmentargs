@@ -634,6 +634,9 @@ public class ArgProcessor extends AbstractProcessor {
         }
 
         jw.emitEmptyLine();
+        writeBuildBundleMethod(jw);
+
+        jw.emitEmptyLine();
         writeInjectMethod(jw, fragmentClass, fragment);
 
         jw.emitEmptyLine();
@@ -681,6 +684,17 @@ public class ArgProcessor extends AbstractProcessor {
     }
 
     return true;
+  }
+
+  /**
+   * Write the buildBundle() method
+   * @param jw The javawriter
+   * @throws IOException
+   */
+  private void writeBuildBundleMethod(JavaWriter jw) throws IOException {
+    jw.beginMethod("Bundle", "buildBundle", EnumSet.of(Modifier.PUBLIC));
+    jw.emitStatement("return new Bundle(mArguments)");
+    jw.endMethod();
   }
 
   /**

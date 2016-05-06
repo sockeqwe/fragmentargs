@@ -1,28 +1,19 @@
 language: java
-
 before_install:
 - chmod +x .buildscript/deploy_snapshot.sh
-
 after_success:
 - ".buildscript/deploy_snapshot.sh"
-
 notifications:
   email: false
-
 jdk:
-  - oraclejdk8
-  - oraclejdk7
-
-env:
-  global:
-  - MAVEN_OPTS="-Xmx256M"
-  - secure: "ODMPXTA/fekGf0X4+TCW3W2DFzq3TOp1709i/mXOyPWE0setTErCqTuGIrueGzBJ5pCJpMKjRELxDYyXTonZzNf95y2rXmBI8c5FXMPrqOCG9wxuLc1KaHT0GvpBXyyg0cXReUtKYkTsCXkY2eeFmUk/rFiGFVUAXccvfRK//W0="
-  - secure: "MQUGFaV1qvY8cOj7tKPYSBHzz02SmSoFFY/9ZC1BXm9nlsTwMKuV7o3DOtfo7DgcEe/f/lb+IXNnbnVBVmQ3y0HlVzzIXCcjKcN5lFesMpHqXhVItOyhr0x/DGfLc4ybWYx3tg4Zcr0B6Tww9bREaXTYTrLxOsEvmMYMdKu4chQ="
-
+- oraclejdk8
+- oraclejdk7
 sudo: false
-
 cache:
   directories:
   - "$HOME/.m2/io"
   - "$HOME/.m2/org"
-
+env:
+  global:
+  - secure: VdThaTx/EE4E7MFJOAtv6METi314C4l3+EMZlMhIBc1iBNzK4yHhvtL9qXce3mXg7n/ceFxezb6fZz6j1B1tZoKg7mBpVJZ3F6SjnX5HJAuLKZofilldoR9xiaEzAz2ruXWaWvxcwlT2bgFDbEdhjeV9MBoaXdRgTfrjhjkiCiE=
+  - secure: fNapWf+mSbP0nWB9/clD3M1L/2uXoNfWg2nJ7GJ5r6eWBQ/qA6vNPJR5EtioWzNQF+KHLh5EBpdOyabx2eHT5aWQkIVaOcLUer8NZU5X7rx7r2LP8THLCyuuvpP1mNmjGmi3fFVw8xp6on0K5YMob0fGxSPgNThjjQ+c+cZ1KVw=
