@@ -163,12 +163,12 @@ public class ArgProcessor extends AbstractProcessor {
       return "SparseParcelableArray";
     }
 
-    if (types.isAssignable(type, elements.getTypeElement(Serializable.class.getName()).asType())) {
-      return "Serializable";
-    }
-
     if (types.isAssignable(type, elements.getTypeElement("android.os.Parcelable").asType())) {
       return "Parcelable";
+    }
+
+    if (types.isAssignable(type, elements.getTypeElement(Serializable.class.getName()).asType())) {
+      return "Serializable";
     }
 
     return null;
