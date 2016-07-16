@@ -11,11 +11,21 @@ To generate the Builder classes android annotation processor will be used. In gr
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:x.x.x'
-	apt 'com.hannesdorfmann.fragmentargs:processor:x.x.x'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:3.0.2'
+	apt 'com.hannesdorfmann.fragmentargs:processor:3.0.2'
 }
 ```
-where you have to replace x.x.x with the latest version.
+### SNAPSHOT
+Lastest snapshot version is `4.0.0-SNAPSHOT`. You also have to add the url to the snapshot repository:
+
+```gradle
+allprojects {
+  repositories {
+    ...
+
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+```
 
 
 # Changelog
