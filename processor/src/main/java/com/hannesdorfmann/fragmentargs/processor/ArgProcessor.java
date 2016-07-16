@@ -879,11 +879,11 @@ public class ArgProcessor extends AbstractProcessor {
           setterAssignmentHelperStr = field.getType()
               + " value"
               + setterAssignmentHelperCounter
-              + " =  %s.get(\"%s\", args)";
+              + " = (%s) %s.get(\"%s\", args)";
           assignmentStr = "fragment.%s( value" + setterAssignmentHelperCounter + " )";
           setterAssignmentHelperCounter++;
         } else {
-          assignmentStr = "fragment.%s = %s.get(\"%s\", args)";
+          assignmentStr = "fragment.%s = (%s) %s.get(\"%s\", args)";
         }
 
         // Required
@@ -894,11 +894,11 @@ public class ArgProcessor extends AbstractProcessor {
               field.getKey());
           jw.endControlFlow();
           if (useSetter) {
-            jw.emitStatement(setterAssignmentHelperStr, field.getBundlerFieldName(),
+            jw.emitStatement(setterAssignmentHelperStr, field.getType(), field.getBundlerFieldName(),
                 field.getKey());
             jw.emitStatement(assignmentStr, setterMethod);
           } else {
-            jw.emitStatement(assignmentStr, field.getName(),
+            jw.emitStatement(assignmentStr, field.getName(), field.getType(),
                 field.getBundlerFieldName(), field.getKey());
           }
         } else {
