@@ -21,8 +21,8 @@ public @interface FragmentWithArgs {
   /**
    * Is inheritance hierarchy scanning enabled? default value = true. Specifies if all @{@link Arg}
    * annotations of all super classes (checks the complete inheritance hierarchy) should be included
-   * in the fragment. The default value is true and <b></b>you don't have to specify that for each
-   * fragment</b>
+   * in the fragment. The default value is true and you don't have to specify that for each
+   * fragment
    */
   boolean inherited() default true;
 }

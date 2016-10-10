@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * Specifies if all @{@link Arg} annotations of all super classes (checks the complete inheritance
- * hierarchy) should be included in the fragment. The default value is true and <b></b>you don't
- * have to specify that for each fragment</b>
+ * hierarchy) should be included in the fragment. The default value is true and you don't
+ * have to specify that for each fragment
  *
  * @author Hannes Dorfmann
  * @deprecated Use {@link FragmentWithArgs} instead. This annotation can be removed in any further major

@@ -10,8 +10,7 @@ import java.util.List;
  * the List is instance of ArrayList.
  * <p>
  * With this ArgsBundler you can annotate fields of type java.util.List like that
- * <code>@Arg(bundler
- * = CastedArrayListArgsBundler.class) List<Foo> foos></code>
+ * {@code @Arg(bundler = CastedArrayListArgsBundler.class) List<Foo> foos>}
  * </p>
  *
  * @author Hannes Dorfmann

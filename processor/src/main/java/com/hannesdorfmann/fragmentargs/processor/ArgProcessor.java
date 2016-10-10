@@ -688,6 +688,7 @@ public class ArgProcessor extends AbstractProcessor {
 
   /**
    * Write the buildBundle() method
+   *
    * @param jw The javawriter
    * @throws IOException
    */
@@ -943,8 +944,11 @@ public class ArgProcessor extends AbstractProcessor {
         }
 
         if (useSetter) {
-          jw.emitStatement("fragment.%1$s( %4$sargs.get%2$s(\"%3$s\") )", setterMethod, op,
+          jw.emitStatement("%1$s value"+setterAssignmentHelperCounter+" = %4$sargs.get%2$s(\"%3$s\")", field.getType(), op,
               field.getKey(), cast);
+          jw.emitStatement("fragment.%1$s(value" + setterAssignmentHelperCounter + ")",
+              setterMethod);
+          setterAssignmentHelperCounter++;
         } else {
           jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", field.getName(), op,
               field.getKey(), cast);
