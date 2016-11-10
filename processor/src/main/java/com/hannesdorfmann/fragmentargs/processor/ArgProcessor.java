@@ -580,6 +580,9 @@ public class ArgProcessor extends AbstractProcessor {
         jw.emitImports("android.os.Bundle");
         if (supportAnnotations) {
           jw.emitImports("android.support.annotation.NonNull");
+          if (!fragment.getRequiredFields().isEmpty()) {
+            jw.emitImports("android.support.annotation.Nullable");
+          }
         }
 
         jw.emitEmptyLine();
@@ -944,7 +947,9 @@ public class ArgProcessor extends AbstractProcessor {
         }
 
         if (useSetter) {
-          jw.emitStatement("%1$s value"+setterAssignmentHelperCounter+" = %4$sargs.get%2$s(\"%3$s\")", field.getType(), op,
+          jw.emitStatement(
+              "%1$s value" + setterAssignmentHelperCounter + " = %4$sargs.get%2$s(\"%3$s\")",
+              field.getType(), op,
               field.getKey(), cast);
           jw.emitStatement("fragment.%1$s(value" + setterAssignmentHelperCounter + ")",
               setterMethod);
@@ -967,9 +972,19 @@ public class ArgProcessor extends AbstractProcessor {
     writer.emitEmptyLine();
     boolean annotate = supportAnnotations && !arg.isPrimitive();
 
+    String typeStr;
+    if (annotate) {
+      if (arg.isRequired()) {
+        typeStr = "@NonNull " + arg.getType();
+      } else {
+        typeStr = "@Nullable " + arg.getType();
+      }
+    } else {
+      typeStr = arg.getType();
+    }
+
     writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC),
-        annotate ? "@NonNull " + arg.getType() : arg.getType(),
-        arg.getVariableName());
+        typeStr, arg.getVariableName());
     writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
     writer.emitStatement("return this");
     writer.endMethod();
