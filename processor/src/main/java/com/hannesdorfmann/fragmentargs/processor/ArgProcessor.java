@@ -187,12 +187,12 @@ public class ArgProcessor extends AbstractProcessor {
     return processingEnv.getTypeUtils().getDeclaredType(arrayList, elType);
   }
 
-  protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
+  private void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
       ArgumentAnnotatedField arg) throws IOException, ProcessingException {
 
     jw.emitEmptyLine();
 
-    if (!arg.isPrimitive()) {
+    if (!arg.isPrimitive() && !arg.isRequired()) {
       jw.beginControlFlow("if (%s == null)", sourceVariable);
       jw.emitStatement("throw new NullPointerException(\"Argument '%s' must not be null.\")",
           arg.getName());
