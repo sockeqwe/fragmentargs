@@ -7,12 +7,10 @@ I have written a blog entry about this library: http://hannesdorfmann.com/androi
 Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.png)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
 [![Build Status](https://travis-ci.org/sockeqwe/fragmentargs.svg?branch=master)](https://travis-ci.org/sockeqwe/fragmentargs)
 
-To generate the Builder classes android annotation processor will be used. In gradle / android studio you need to apply Hugo Visser's awesome [android-apt](https://bitbucket.org/hvisser/android-apt) gradle plugin to run annotation processing.
-
 ```groovy
 dependencies {
 	compile 'com.hannesdorfmann.fragmentargs:annotation:3.0.2'
-	apt 'com.hannesdorfmann.fragmentargs:processor:3.0.2'
+	annotationProcessor 'com.hannesdorfmann.fragmentargs:processor:3.0.2'
 }
 ```
 ### SNAPSHOT
