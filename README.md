@@ -1,9 +1,9 @@
-#FragmentArgs
+# FragmentArgs
 Annotation Processor to create arguments for android fragments without using reflections.
 
 I have written a blog entry about this library: http://hannesdorfmann.com/android/fragmentargs
 
-#Dependency
+# Dependency
 Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation/badge.png)](https://maven-badges.herokuapp.com/maven-central/com.hannesdorfmann.fragmentargs/annotation)
 [![Build Status](https://travis-ci.org/sockeqwe/fragmentargs.svg?branch=master)](https://travis-ci.org/sockeqwe/fragmentargs)
 
@@ -29,7 +29,7 @@ allprojects {
 # Changelog
 The changelog can be found [here](https://github.com/sockeqwe/fragmentargs/blob/master/CHANGELOG.md)
 
-#How to use
+# How to use
 FragmentArgs generates Java code at compile time. It generates a `Builder` class out of your Fragment class.
 
  1. Annotate your `Fragment` with `@FragmentWithArgs`.  For backward compatibility reasons this is not mandatory. However it's strongly recommended because in further versions of FragmentArgs this could become mandatory to support more features.
@@ -107,7 +107,7 @@ public class MyActivity extends Activity {
 }
 ```
 
-##Optional Arguments
+## Optional Arguments
 You can specify a fragment argument to be optional by using `@Arg(required = false)`
 
 For example:
@@ -432,10 +432,10 @@ kapt {
  - **fragmentArgsSupportAnnotations**: As default the methods of the generated `Builder` are annotated with the annotations from support library like `@NonNull` etc. You can disable that feature by passing `false`.
  - **fragmentArgsBuilderAnnotations**: You can add additional annotations to the generated `Builder` classes. For example you can add `@DebugLog` annotation to the `Builder` classes to use Jake Wharton's [Hugo](https://github.com/JakeWharton/hugo) for logging in debug builds. You have to pass a string of a full qualified annotation class name. You can supply multiple annotations by using a white space between each one.
 
-#Proguard
+# Proguard
 ```
 -keep class com.hannesdorfmann.fragmentargs.** { *; }
 ```
 
-#Thanks
+# Thanks
 Parts of the annotation code are based on Hugo Visser's [Bundle](https://bitbucket.org/hvisser/bundles) project. I have added some optimizations and improvements.
