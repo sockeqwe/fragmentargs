@@ -435,6 +435,9 @@ kapt {
 # Proguard
 ```
 -keep class com.hannesdorfmann.fragmentargs.** { *; }
+-keepclasseswithmembernames class * {
+    @com.hannesdorfmann.fragmentargs.annotation.** <fields>;
+}
 ```
 
 # Thanks
