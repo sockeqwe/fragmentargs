@@ -770,6 +770,7 @@ public class ArgProcessor extends AbstractProcessor {
 
       jw.emitEmptyLine();
       // The mapping Method
+      jw.emitAnnotation("Override");
       jw.beginMethod("void", "inject", EnumSet.of(Modifier.PUBLIC), "Object", "target");
 
       jw.emitEmptyLine();
