@@ -760,8 +760,6 @@ public class ArgProcessor extends AbstractProcessor {
       JavaWriter jw = new JavaWriter(writer);
       // Package
       jw.emitPackage(FragmentArgs.AUTO_MAPPING_PACKAGE);
-      // Imports
-      jw.emitImports("android.os.Bundle");
 
       // Class
       jw.beginType(FragmentArgs.AUTO_MAPPING_CLASS_NAME, "class",
