@@ -567,7 +567,7 @@ public class ArgProcessor extends AbstractProcessor {
           superClass = element.getSuperclass();
         }
 
-        String qualifiedFragmentName = fragment.getQualifiedName().toString();
+        String qualifiedFragmentName = fragment.getQualifiedName();
         String qualifiedBuilderName = qualifiedFragmentName + "Builder";
 
         Element[] orig = originating.toArray(new Element[originating.size()]);
@@ -580,7 +580,7 @@ public class ArgProcessor extends AbstractProcessor {
         jw.emitImports("android.os.Bundle");
         if (supportAnnotations) {
           jw.emitImports("android.support.annotation.NonNull");
-          if (!fragment.getRequiredFields().isEmpty()) {
+          if (!fragment.getOptionalFields().isEmpty()) {
             jw.emitImports("android.support.annotation.Nullable");
           }
         }
