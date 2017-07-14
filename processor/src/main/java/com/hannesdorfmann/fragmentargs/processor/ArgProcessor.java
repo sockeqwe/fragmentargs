@@ -645,8 +645,6 @@ public class ArgProcessor extends AbstractProcessor {
         jw.emitEmptyLine();
         writeBuildMethod(jw, fragmentClass);
 
-        jw.emitEmptyLine();
-        writeBuildSubclassMethod(jw, fragmentClass);
         jw.endType();
 
         autoMapping.put(qualifiedFragmentName, qualifiedBuilderName);
@@ -822,17 +820,6 @@ public class ArgProcessor extends AbstractProcessor {
 
     jw.beginMethod(element.getSimpleName().toString(), "build", EnumSet.of(Modifier.PUBLIC));
     jw.emitStatement("%1$s fragment = new %1$s()", element.getSimpleName().toString());
-    jw.emitStatement("fragment.setArguments(mArguments)");
-    jw.emitStatement("return fragment");
-    jw.endMethod();
-  }
-
-  private void writeBuildSubclassMethod(JavaWriter jw, TypeElement element) throws IOException {
-    if (supportAnnotations) {
-      jw.emitAnnotation("NonNull");
-    }
-    jw.beginMethod("<F extends " + element.getSimpleName().toString() + "> F", "build",
-        EnumSet.of(Modifier.PUBLIC), supportAnnotations ? "@NonNull F" : "F", "fragment");
     jw.emitStatement("fragment.setArguments(mArguments)");
     jw.emitStatement("return fragment");
     jw.endMethod();
