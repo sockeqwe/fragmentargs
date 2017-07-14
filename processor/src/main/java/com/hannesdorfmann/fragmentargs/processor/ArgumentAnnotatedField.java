@@ -200,6 +200,10 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
       return name.substring(1, 2).toLowerCase();
     } else if (name.matches("m[A-Z]{1}.*")) {
       return name.substring(1, 2).toLowerCase() + name.substring(2);
+    } else if (name.matches("^is[A-Z]{1}")) {
+      return name.substring(2, 3).toLowerCase();
+    } else if (name.matches("is[A-Z]{1}.*")) {
+      return name.substring(2, 3).toLowerCase() + name.substring(3);
     }
     return name;
   }
