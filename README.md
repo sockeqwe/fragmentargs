@@ -223,7 +223,7 @@ public class OtherFragment extends BaseFragment {
       }
 }
 ```
-`FragmentArgs` also supports inheritance and abstract classes. That means that annotated fields of the supper class are part of the builder of the subclass. Furthermore there are special cases where you have a Fragment without any `@Arg` annotation but you want to use the arguments of the super class. For this special case you can use `@FragmentArgsInherited`. For Example:
+`FragmentArgs` also supports inheritance and abstract classes. That means that annotated fields of the supper class are part of the builder of the subclass. Furthermore this also works for special cases where you have a Fragment without any `@Arg` annotation but you want to use the arguments of the super class. For Example:
 
 ```java
 public class A extends Fragment {
@@ -233,7 +233,7 @@ public class A extends Fragment {
 
 }
 
-@FragmentArgsInherited
+@FragmentArgs
 public class B extends A {
 
   // Arguments will be taken from super class

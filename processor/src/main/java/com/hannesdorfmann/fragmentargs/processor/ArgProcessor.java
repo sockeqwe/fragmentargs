@@ -3,7 +3,6 @@ package com.hannesdorfmann.fragmentargs.processor;
 import com.hannesdorfmann.fragmentargs.FragmentArgs;
 import com.hannesdorfmann.fragmentargs.FragmentArgsInjector;
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
-import com.hannesdorfmann.fragmentargs.annotation.FragmentArgsInherited;
 import com.hannesdorfmann.fragmentargs.annotation.FragmentWithArgs;
 import com.hannesdorfmann.fragmentargs.bundler.ArgsBundler;
 import com.hannesdorfmann.fragmentargs.repacked.com.squareup.javawriter.JavaWriter;
@@ -101,7 +100,6 @@ public class ArgProcessor extends AbstractProcessor {
     Set<String> supportTypes = new LinkedHashSet<String>();
     supportTypes.add(Arg.class.getCanonicalName());
     supportTypes.add(FragmentWithArgs.class.getCanonicalName());
-    supportTypes.add(FragmentArgsInherited.class.getCanonicalName());
     return supportTypes;
   }
 
@@ -410,19 +408,6 @@ public class ArgProcessor extends AbstractProcessor {
       scanSuperClasses = fragmentWithArgs.inherited();
     }
 
-    // DEPRECATED annotation
-    FragmentArgsInherited inheritedFragmentArgs = type.getAnnotation(FragmentArgsInherited.class);
-    if (inheritedFragmentArgs != null) {
-      scanSuperClasses = inheritedFragmentArgs.value();
-    }
-
-    if (fragmentWithArgs != null && inheritedFragmentArgs != null) {
-      throw new ProcessingException(type,
-          "Class %s is annotated with @%s and with the old deprecated @%s annotation. You have to migrate to the new annotation and use @%s only.",
-          type.getSimpleName(), FragmentWithArgs.class.getSimpleName(), FragmentArgsInherited.class
-          .getSimpleName(), FragmentWithArgs.class.getSimpleName());
-    }
-
     return scanSuperClasses; // Default value
   }
 
@@ -521,15 +506,6 @@ public class ArgProcessor extends AbstractProcessor {
         if (!enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
           fragmentClasses.add(enclosingElement);
         }
-      } catch (ProcessingException e) {
-        processingExceptions.add(e);
-      }
-    }
-
-    // Search for "just" @InheritedFragmentArgs --> DEPRECATED
-    for (Element element : env.getElementsAnnotatedWith(FragmentArgsInherited.class)) {
-      try {
-        scanForAnnotatedFragmentClasses(env, FragmentArgsInherited.class, fragmentClasses, element);
       } catch (ProcessingException e) {
         processingExceptions.add(e);
       }
@@ -700,8 +676,7 @@ public class ArgProcessor extends AbstractProcessor {
   }
 
   /**
-   * Scans a fragment for a given {@link FragmentWithArgs} annotation or ({@link
-   * FragmentArgsInherited} (which is deprectated)
+   * Scans a fragment for a given {@link FragmentWithArgs} annotation
    *
    * @param env The round enviroment
    * @param annotationClass The annotation (.class) to scan for
