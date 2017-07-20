@@ -190,13 +190,12 @@ public class ArgProcessor extends AbstractProcessor {
   private void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable,
       ArgumentAnnotatedField arg) throws IOException, ProcessingException {
 
+    boolean addNullCheck = !arg.isPrimitive() && !arg.isRequired();
+
     jw.emitEmptyLine();
 
-    if (!arg.isPrimitive() && !arg.isRequired()) {
-      jw.beginControlFlow("if (%s == null)", sourceVariable);
-      jw.emitStatement("throw new NullPointerException(\"Argument '%s' must not be null.\")",
-          arg.getName());
-      jw.endControlFlow();
+    if (addNullCheck) {
+      jw.beginControlFlow("if (%s != null)", sourceVariable);
     }
 
     if (arg.hasCustomBundler()) {
@@ -222,6 +221,10 @@ public class ArgProcessor extends AbstractProcessor {
       }
       jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable,
           bundleVariable);
+    }
+
+    if(addNullCheck) {
+      jw.endControlFlow();
     }
   }
 
