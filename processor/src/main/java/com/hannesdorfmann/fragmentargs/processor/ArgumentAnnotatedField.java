@@ -196,9 +196,9 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
   }
 
   public static String getVariableName(String name) {
-    if (name.matches("^m[A-Z]{1}")) {
+    if (name.matches("^m[A-Z]{1}") || name.matches("^_[A-Za-z]{1}")) {
       return name.substring(1, 2).toLowerCase();
-    } else if (name.matches("m[A-Z]{1}.*")) {
+    } else if (name.matches("m[A-Z]{1}.*") || name.matches("_[A-Za-z]{1}.*")) {
       return name.substring(1, 2).toLowerCase() + name.substring(2);
     } else if (name.matches("^is[A-Z]{1}")) {
       return name.substring(2, 3).toLowerCase();
