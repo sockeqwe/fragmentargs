@@ -414,6 +414,7 @@ apt {
     fragmentArgsLib true
     fragmentArgsSupportAnnotations false
     fragmentArgsBuilderAnnotations "hugo.weaving.DebugLog com.foo.OtherAnnotation"
+    fragmentArgsSuppressSerializableEnumWarning true
   }
 }
 
@@ -424,6 +425,7 @@ kapt {
     arg("fragmentArgsLib", true)
     arg("fragmentArgsSupportAnnotations", false)
     arg("fragmentArgsBuilderAnnotations", "hugo.weaving.DebugLog com.foo.OtherAnnotation")
+    arg("fragmentArgsSuppressSerializableEnumWarning", "true")
   }
 }
 ```
@@ -431,6 +433,7 @@ kapt {
  - **fragmentArgsLib**: Already described in _"Using in library projects"_
  - **fragmentArgsSupportAnnotations**: As default the methods of the generated `Builder` are annotated with the annotations from support library like `@NonNull` etc. You can disable that feature by passing `false`.
  - **fragmentArgsBuilderAnnotations**: You can add additional annotations to the generated `Builder` classes. For example you can add `@DebugLog` annotation to the `Builder` classes to use Jake Wharton's [Hugo](https://github.com/JakeWharton/hugo) for logging in debug builds. You have to pass a string of a full qualified annotation class name. You can supply multiple annotations by using a white space between each one.
+ - **fragmentArgsSuppressSerializableEnumWarning**: You can suppress warnings like `warning: {enumFieldName} will be stored as Serializable` with this flag. This applies **only** to Enums.
 
 # Proguard
 ```
