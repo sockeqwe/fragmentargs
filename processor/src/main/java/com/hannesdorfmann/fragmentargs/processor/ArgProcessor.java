@@ -66,10 +66,9 @@ public class ArgProcessor extends AbstractProcessor {
             "fragmentArgsBuilderAnnotations";
 
     /**
-     * Suppress warnings for serializable {@link Enum}s
+     * Enable/disable warning logs
      */
-    private static final String OPTION_SUPPRESS_SERIALIZABLE_ENUM =
-            "fragmentArgsSuppressSerializableEnumWarning";
+    private static final String OPTION_LOG_WARNINGS = "fragmentArgsLogWarnings";
 
     static {
         ARGUMENT_TYPES.put("java.lang.String", "String");
@@ -100,7 +99,7 @@ public class ArgProcessor extends AbstractProcessor {
     private TypeElement TYPE_FRAGMENT;
     private TypeElement TYPE_SUPPORT_FRAGMENT;
     private boolean supportAnnotations = true;
-    private boolean warnSerializableEnum = true;
+    private boolean logWarnings = true;
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -116,7 +115,7 @@ public class ArgProcessor extends AbstractProcessor {
         supportedOptions.add(OPTION_IS_LIBRARY);
         supportedOptions.add(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
         supportedOptions.add(OPTION_SUPPORT_ANNOTATIONS);
-        supportedOptions.add(OPTION_SUPPRESS_SERIALIZABLE_ENUM);
+        supportedOptions.add(OPTION_LOG_WARNINGS);
         return supportedOptions;
     }
 
@@ -220,17 +219,11 @@ public class ArgProcessor extends AbstractProcessor {
                         arg.getElement().asType().toString(), ArgsBundler.class.getSimpleName());
             }
 
-            boolean warnSerializable = "Serializable".equals(op);
-
-            if(!warnSerializableEnum && ElementKind.ENUM.equals(arg.getElement().getKind())) {
-                warnSerializable = false;
-            }
-
-            if (warnSerializable) {
-                processingEnv.getMessager()
-                        .printMessage(Diagnostic.Kind.WARNING,
-                                String.format("%1$s will be stored as Serializable", arg.getName()),
-                                arg.getElement());
+            if ("Serializable".equals(op)) {
+                warn(arg.getElement(),
+                    "%1$s will be stored as Serializable",
+                    arg.getName()
+                );
             }
 
             jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable,
@@ -485,9 +478,9 @@ public class ArgProcessor extends AbstractProcessor {
             additionalBuilderAnnotations = builderAnnotationsStr.split(" "); // White space is delimiter
         }
 
-        String fragmentArgsSuppressSerializableEnum = processingEnv.getOptions().get(OPTION_SUPPRESS_SERIALIZABLE_ENUM);
-        if(fragmentArgsSuppressSerializableEnum != null && fragmentArgsSuppressSerializableEnum.equalsIgnoreCase("true")) {
-            warnSerializableEnum = false;
+        String fragmentArgsLogWarnings = processingEnv.getOptions().get(OPTION_LOG_WARNINGS);
+        if(fragmentArgsLogWarnings != null && fragmentArgsLogWarnings.equalsIgnoreCase("false")) {
+            logWarnings = false;
         }
 
         List<ProcessingException> processingExceptions = new ArrayList<ProcessingException>();
@@ -972,7 +965,7 @@ public class ArgProcessor extends AbstractProcessor {
         writer.endMethod();
     }
 
-    public void error(ProcessingException e) {
+    private void error(ProcessingException e) {
         String message = e.getMessage();
         if (e.getMessageArgs().length > 0) {
             message = String.format(message, e.getMessageArgs());
@@ -980,11 +973,13 @@ public class ArgProcessor extends AbstractProcessor {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message, e.getElement());
     }
 
-    public void warn(Element element, String message, Object... args) {
-        if (args.length > 0) {
-            message = String.format(message, args);
+    private void warn(Element element, String message, Object... args) {
+        if(logWarnings) {
+            if (args.length > 0) {
+                message = String.format(message, args);
+            }
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
     }
 
     @Override
