@@ -65,6 +65,11 @@ public class ArgProcessor extends AbstractProcessor {
     private static final String OPTION_ADDITIONAL_BUILDER_ANNOTATIONS =
             "fragmentArgsBuilderAnnotations";
 
+    /**
+     * Enable/disable warning logs
+     */
+    private static final String OPTION_LOG_WARNINGS = "fragmentArgsLogWarnings";
+
     static {
         ARGUMENT_TYPES.put("java.lang.String", "String");
         ARGUMENT_TYPES.put("int", "Int");
@@ -88,13 +93,13 @@ public class ArgProcessor extends AbstractProcessor {
         ARGUMENT_TYPES.put("android.os.Parcelable", "Parcelable");
     }
 
-    private Elements elementUtils;
     private Types typeUtils;
     private Filer filer;
 
     private TypeElement TYPE_FRAGMENT;
     private TypeElement TYPE_SUPPORT_FRAGMENT;
     private boolean supportAnnotations = true;
+    private boolean logWarnings = true;
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -106,18 +111,19 @@ public class ArgProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> suppotedOptions = new LinkedHashSet<String>();
-        suppotedOptions.add(OPTION_IS_LIBRARY);
-        suppotedOptions.add(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
-        suppotedOptions.add(OPTION_SUPPORT_ANNOTATIONS);
-        return suppotedOptions;
+        Set<String> supportedOptions = new LinkedHashSet<String>();
+        supportedOptions.add(OPTION_IS_LIBRARY);
+        supportedOptions.add(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
+        supportedOptions.add(OPTION_SUPPORT_ANNOTATIONS);
+        supportedOptions.add(OPTION_LOG_WARNINGS);
+        return supportedOptions;
     }
 
     @Override
     public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
 
-        elementUtils = env.getElementUtils();
+        Elements elementUtils = env.getElementUtils();
         typeUtils = env.getTypeUtils();
         filer = env.getFiler();
 
@@ -212,12 +218,14 @@ public class ArgProcessor extends AbstractProcessor {
                                 + "However, you can specify your own %s implementation in @Arg( bundler = YourBundler.class)",
                         arg.getElement().asType().toString(), ArgsBundler.class.getSimpleName());
             }
+
             if ("Serializable".equals(op)) {
-                processingEnv.getMessager()
-                        .printMessage(Diagnostic.Kind.WARNING,
-                                String.format("%1$s will be stored as Serializable", arg.getName()),
-                                arg.getElement());
+                warn(arg.getElement(),
+                    "%1$s will be stored as Serializable",
+                    arg.getName()
+                );
             }
+
             jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable,
                     bundleVariable);
         }
@@ -446,7 +454,6 @@ public class ArgProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> type, RoundEnvironment env) {
 
-        Elements elementUtils = processingEnv.getElementUtils();
         Types typeUtils = processingEnv.getTypeUtils();
         Filer filer = processingEnv.getFiler();
 
@@ -469,6 +476,11 @@ public class ArgProcessor extends AbstractProcessor {
                 processingEnv.getOptions().get(OPTION_ADDITIONAL_BUILDER_ANNOTATIONS);
         if (builderAnnotationsStr != null && builderAnnotationsStr.length() > 0) {
             additionalBuilderAnnotations = builderAnnotationsStr.split(" "); // White space is delimiter
+        }
+
+        String fragmentArgsLogWarnings = processingEnv.getOptions().get(OPTION_LOG_WARNINGS);
+        if(fragmentArgsLogWarnings != null && fragmentArgsLogWarnings.equalsIgnoreCase("false")) {
+            logWarnings = false;
         }
 
         List<ProcessingException> processingExceptions = new ArrayList<ProcessingException>();
@@ -953,7 +965,7 @@ public class ArgProcessor extends AbstractProcessor {
         writer.endMethod();
     }
 
-    public void error(ProcessingException e) {
+    private void error(ProcessingException e) {
         String message = e.getMessage();
         if (e.getMessageArgs().length > 0) {
             message = String.format(message, e.getMessageArgs());
@@ -961,11 +973,13 @@ public class ArgProcessor extends AbstractProcessor {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message, e.getElement());
     }
 
-    public void warn(Element element, String message, Object... args) {
-        if (args.length > 0) {
-            message = String.format(message, args);
+    private void warn(Element element, String message, Object... args) {
+        if(logWarnings) {
+            if (args.length > 0) {
+                message = String.format(message, args);
+            }
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
     }
 
     @Override
