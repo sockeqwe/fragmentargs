@@ -194,6 +194,16 @@ public class AnnotatedFragment {
       }
     }
 
+    // Kotlin special boolean character treatment
+    // Fields prefixed with "is" are not accessible through "setIsFoo" but with "setFoo"
+    if (field.getName().length() > 1 && field.getName().matches("is[A-Z].*")) {
+      String setterName = "set" + field.getName().substring(2);
+      setterMethod = setterMethods.get(setterName);
+      if (setterMethod != null && isSetterApplicable(field, setterMethod)) {
+        return setterMethod; // setter method found
+      }
+    }
+
     throw new ProcessingException(field.getElement(), "The @%s annotated field '%s' in class %s has " +
         "private or protected visibility. Hence a corresponding setter method must be provided " +
         "called '%s(%s)'. Unfortunately this is not the case. Please add a setter method for " +
