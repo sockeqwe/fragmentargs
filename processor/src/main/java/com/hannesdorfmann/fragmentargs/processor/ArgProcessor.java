@@ -686,6 +686,7 @@ public class ArgProcessor extends AbstractProcessor {
      * @throws IOException
      */
     private void writeBuildBundleMethod(JavaWriter jw) throws IOException {
+        if (supportAnnotations) jw.emitAnnotation("NonNull");
         jw.beginMethod("Bundle", "buildBundle", EnumSet.of(Modifier.PUBLIC));
         jw.emitStatement("return new Bundle(mArguments)");
         jw.endMethod();
@@ -958,6 +959,7 @@ public class ArgProcessor extends AbstractProcessor {
             typeStr = arg.getType();
         }
 
+        if (supportAnnotations) writer.emitAnnotation("NonNull");
         writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC),
                 typeStr, arg.getVariableName());
         writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
