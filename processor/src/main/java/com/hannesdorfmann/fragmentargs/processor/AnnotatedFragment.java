@@ -205,7 +205,7 @@ public class AnnotatedFragment {
     }
 
     throw new ProcessingException(field.getElement(), "The @%s annotated field '%s' in class %s has " +
-        "private or protected visibility. Hence a corresponding setter method must be provided " +
+        "private visibility. Hence a corresponding non-private setter method must be provided " +
         "called '%s(%s)'. Unfortunately this is not the case. Please add a setter method for " +
         "this field!", Arg.class.getSimpleName(), field.getName(), getSimpleName(), methodName,
         field.getType());

@@ -27,7 +27,7 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
   private String bundlerClass;
   private String bundlerFieldName;
 
-  private boolean useSetterMethod = false;
+  private boolean useSetterMethod;
 
   public ArgumentAnnotatedField(Element element, TypeElement classElement, Arg annotation)
       throws ProcessingException {
@@ -39,10 +39,8 @@ public class ArgumentAnnotatedField implements Comparable<ArgumentAnnotatedField
     this.required = annotation.required();
     this.classElement = classElement;
 
-    // Private or protected fields need a setter method
-    useSetterMethod = element.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)
-        || element.getModifiers().contains(javax.lang.model.element.Modifier.PROTECTED);
-
+    // Private fields need a setter method
+    useSetterMethod = element.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE);
 
     try {
       Class<? extends ArgsBundler> clazz = annotation.bundler();
