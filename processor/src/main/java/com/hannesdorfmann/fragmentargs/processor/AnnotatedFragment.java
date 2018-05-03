@@ -37,6 +37,10 @@ public class AnnotatedFragment {
     this.classElement = classElement;
   }
 
+  public TypeElement getClassElement() {
+    return classElement;
+  }
+
   /**
    * Checks if a field (with the given name) is already in this class
    */

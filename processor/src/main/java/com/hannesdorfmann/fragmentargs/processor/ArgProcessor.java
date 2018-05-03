@@ -28,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -842,9 +843,15 @@ public class ArgProcessor extends AbstractProcessor {
         for (ArgumentAnnotatedField field : allArguments) {
             jw.emitEmptyLine();
 
+            Set<Modifier> modifiers = field.getElement().getModifiers();
+
             // Check if the given setter is available
             String setterMethod = null;
-            boolean useSetter = field.isUseSetterMethod();
+
+            // Private fields and non-public fields from a different package need a setter method
+            boolean useSetter = modifiers.contains(Modifier.PRIVATE)
+                    || (!getPackage(fragment.getClassElement()).equals(getPackage(field.getElement())) && !modifiers.contains(Modifier.PUBLIC));
+
             if (useSetter) {
                 ExecutableElement setterMethodElement = fragment.findSetterForField(field);
                 setterMethod = setterMethodElement.getSimpleName().toString();
@@ -982,6 +989,13 @@ public class ArgProcessor extends AbstractProcessor {
             }
             processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
         }
+    }
+
+    private PackageElement getPackage(Element element) {
+        while (element.getKind() != ElementKind.PACKAGE) {
+            element = element.getEnclosingElement();
+        }
+        return (PackageElement) element;
     }
 
     @Override
