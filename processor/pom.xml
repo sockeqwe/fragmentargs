@@ -39,11 +39,18 @@
         <dependency>
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
+            <version>0.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.truth0</groupId>
+            <groupId>com.google.truth</groupId>
             <artifactId>truth</artifactId>
+            <version>0.28</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
