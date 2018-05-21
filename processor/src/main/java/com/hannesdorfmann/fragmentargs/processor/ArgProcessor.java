@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -99,6 +99,7 @@ public class ArgProcessor extends AbstractProcessor {
 
     private TypeElement TYPE_FRAGMENT;
     private TypeElement TYPE_SUPPORT_FRAGMENT;
+    private TypeElement TYPE_ANDROIDX_FRAGMENT;
     private boolean supportAnnotations = true;
     private boolean logWarnings = true;
 
@@ -131,9 +132,11 @@ public class ArgProcessor extends AbstractProcessor {
         TYPE_FRAGMENT = elementUtils.getTypeElement("android.app.Fragment");
         TYPE_SUPPORT_FRAGMENT =
                 elementUtils.getTypeElement("android.support.v4.app.Fragment");
+        TYPE_ANDROIDX_FRAGMENT =
+                elementUtils.getTypeElement("androidx.fragment.app.Fragment");
     }
 
-    protected String getOperation(ArgumentAnnotatedField arg) {
+    private String getOperation(ArgumentAnnotatedField arg) {
         String op = ARGUMENT_TYPES.get(arg.getRawType());
         if (op != null) {
             if (arg.isArray()) {
@@ -236,7 +239,7 @@ public class ArgProcessor extends AbstractProcessor {
         }
     }
 
-    protected void writePackage(JavaWriter jw, TypeElement type) throws IOException {
+    private void writePackage(JavaWriter jw, TypeElement type) throws IOException {
         PackageElement pkg = processingEnv.getElementUtils().getPackageOf(type);
         if (!pkg.isUnnamed()) {
             jw.emitPackage(pkg.getQualifiedName().toString());
@@ -348,9 +351,7 @@ public class ArgProcessor extends AbstractProcessor {
 
             for (Element e : superClassElement.getEnclosedElements()) {
                 if (e.getKind() == ElementKind.FIELD && e.getSimpleName() != null &&
-                        e.getSimpleName().toString() != null && e.getSimpleName()
-                        .toString()
-                        .equals(fieldName)) {
+                        e.getSimpleName().toString().equals(fieldName)) {
                     superClassFound = true;
                     break;
                 }
@@ -435,7 +436,6 @@ public class ArgProcessor extends AbstractProcessor {
         }
 
         // Without super classes (inheritance)
-        Map<String, ExecutableElement> setterMethodsMap = new HashMap<String, ExecutableElement>();
         AnnotatedFragment fragment = new AnnotatedFragment(type);
         for (Element element : type.getEnclosedElements()) {
             if (element.getKind() == ElementKind.FIELD) {
@@ -484,6 +484,28 @@ public class ArgProcessor extends AbstractProcessor {
             logWarnings = false;
         }
 
+        String nonNullAnnotationImport = "";
+        String nullableAnnotationImport = "";
+
+        if(supportAnnotations) {
+            if (isClassAvailable("android.support.annotation.NonNull")) {
+                nonNullAnnotationImport = "android.support.annotation.NonNull";
+                nullableAnnotationImport = "android.support.annotation.Nullable";
+
+            } else if (isClassAvailable("androidx.annotation.NonNull")) {
+                nonNullAnnotationImport = "androidx.annotation.NonNull";
+                nullableAnnotationImport = "androidx.annotation.Nullable";
+
+            } else {
+                supportAnnotations = false;
+                warn(null,
+                        "Support annotations have been disabled because neither " +
+                                "'android.support.annotation.NonNull' nor " +
+                                "'androidx.annotation.NonNull' could be found during processing"
+                );
+            }
+        }
+
         List<ProcessingException> processingExceptions = new ArrayList<ProcessingException>();
 
         JavaWriter jw = null;
@@ -500,7 +522,7 @@ public class ArgProcessor extends AbstractProcessor {
                 TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
                 // Check if its a fragment
-                if (!isFragmentClass(enclosingElement, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
+                if (!isFragmentClass(enclosingElement)) {
                     throw new ProcessingException(element,
                             "@Arg can only be used on fragment fields (%s.%s)",
                             enclosingElement.getQualifiedName(), element);
@@ -572,9 +594,9 @@ public class ArgProcessor extends AbstractProcessor {
                 writePackage(jw, fragmentClass);
                 jw.emitImports("android.os.Bundle");
                 if (supportAnnotations) {
-                    jw.emitImports("android.support.annotation.NonNull");
+                    jw.emitImports(nonNullAnnotationImport);
                     if (!fragment.getOptionalFields().isEmpty()) {
-                        jw.emitImports("android.support.annotation.Nullable");
+                        jw.emitImports(nullableAnnotationImport);
                     }
                 }
 
@@ -696,7 +718,7 @@ public class ArgProcessor extends AbstractProcessor {
     /**
      * Scans a fragment for a given {@link FragmentWithArgs} annotation
      *
-     * @param env             The round enviroment
+     * @param env             The round environment
      * @param annotationClass The annotation (.class) to scan for
      * @param fragmentClasses The set of classes already scanned (containing annotations)
      * @throws ProcessingException
@@ -714,7 +736,7 @@ public class ArgProcessor extends AbstractProcessor {
         TypeElement classElement = (TypeElement) element;
 
         // Check if its a fragment
-        if (!isFragmentClass(element, TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT)) {
+        if (!isFragmentClass(element)) {
             throw new ProcessingException(element,
                     "%s can only be used on fragments, but %s is not a subclass of fragment",
                     annotationClass.getSimpleName(), classElement.getQualifiedName());
@@ -729,12 +751,26 @@ public class ArgProcessor extends AbstractProcessor {
     /**
      * Checks if the given element is in a valid Fragment class
      */
-    private boolean isFragmentClass(Element classElement, TypeElement fragmentType,
-                                    TypeElement supportFragmentType) {
+    private boolean isFragmentClass(Element classElement) {
+        List<TypeElement> fragmentTypeElements = Arrays.asList(TYPE_FRAGMENT, TYPE_SUPPORT_FRAGMENT, TYPE_ANDROIDX_FRAGMENT);
 
-        return (fragmentType != null && typeUtils.isSubtype(classElement.asType(),
-                fragmentType.asType())) || (supportFragmentType != null && typeUtils.isSubtype(
-                classElement.asType(), supportFragmentType.asType()));
+        for (TypeElement fragmentTypeElement : fragmentTypeElements) {
+            if(fragmentTypeElement != null && typeUtils.isSubtype(classElement.asType(),
+                    fragmentTypeElement.asType())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isClassAvailable(String className) {
+        try  {
+            Class.forName(className);
+            return true;
+        }  catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     /**
