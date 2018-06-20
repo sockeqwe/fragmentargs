@@ -414,7 +414,7 @@ apt {
     fragmentArgsLib true
     fragmentArgsSupportAnnotations false
     fragmentArgsBuilderAnnotations "hugo.weaving.DebugLog com.foo.OtherAnnotation"
-    fragmentArgsLogWarnings false
+    fragmentArgsLogWarnings false // Don't print warnings
   }
 }
 
@@ -425,7 +425,7 @@ kapt {
     arg("fragmentArgsLib", true)
     arg("fragmentArgsSupportAnnotations", false)
     arg("fragmentArgsBuilderAnnotations", "hugo.weaving.DebugLog com.foo.OtherAnnotation")
-    arg("fragmentArgsLogWarnings", false)
+    arg("fragmentArgsLogWarnings", false) // Don't print warnings
   }
 }
 ```
