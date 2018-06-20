@@ -9,8 +9,8 @@ Latest version: [![Maven Central](https://maven-badges.herokuapp.com/maven-centr
 
 ```groovy
 dependencies {
-	compile 'com.hannesdorfmann.fragmentargs:annotation:3.0.2'
-	annotationProcessor 'com.hannesdorfmann.fragmentargs:processor:3.0.2'
+	compile 'com.hannesdorfmann.fragmentargs:annotation:4.0.0-RC1'
+	annotationProcessor 'com.hannesdorfmann.fragmentargs:processor:4.0.0-RC1'
 }
 ```
 ### SNAPSHOT
