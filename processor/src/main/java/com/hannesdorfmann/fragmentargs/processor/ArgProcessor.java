@@ -48,7 +48,8 @@ public class ArgProcessor extends AbstractProcessor {
     private static final String CUSTOM_BUNDLER_BUNDLE_KEY =
             "com.hannesdorfmann.fragmentargs.custom.bundler.2312A478rand.";
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
+    private static final Map<String, String> ARGUMENT_TYPES =
+            new HashMap<String, String>(20);
 
     /**
      * Annotation Processor Option
@@ -569,7 +570,8 @@ public class ArgProcessor extends AbstractProcessor {
 
                 AnnotatedFragment fragment = collectArgumentsForType(fragmentClass);
 
-                String builder = fragment.getSimpleName() + "Builder";
+                String builderName = fragment.getBuilderName();
+
                 List<Element> originating = new ArrayList<Element>(10);
                 originating.add(fragmentClass);
                 TypeMirror superClass = fragmentClass.getSuperclass();
@@ -583,7 +585,7 @@ public class ArgProcessor extends AbstractProcessor {
                 }
 
                 String qualifiedFragmentName = fragment.getQualifiedName();
-                String qualifiedBuilderName = qualifiedFragmentName + "Builder";
+                String qualifiedBuilderName = fragment.getQualifiedBuilderName();
 
                 Element[] orig = originating.toArray(new Element[originating.size()]);
                 origHelper = orig;
@@ -600,6 +602,11 @@ public class ArgProcessor extends AbstractProcessor {
                     }
                 }
 
+                // for inner classes we need to add an import
+                if(fragment.isInnerClass()) {
+                    jw.emitImports(fragment.getQualifiedName());
+                }
+
                 jw.emitEmptyLine();
 
                 // Additional builder annotations
@@ -607,7 +614,7 @@ public class ArgProcessor extends AbstractProcessor {
                     jw.emitAnnotation(builderAnnotation);
                 }
 
-                jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+                jw.beginType(builderName, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
 
                 if (!fragment.getBundlerVariableMap().isEmpty()) {
                     jw.emitEmptyLine();
@@ -632,7 +639,7 @@ public class ArgProcessor extends AbstractProcessor {
                     args[index++] = annotate ? "@NonNull " + arg.getType() : arg.getType();
                     args[index++] = arg.getVariableName();
                 }
-                jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
+                jw.beginMethod(null, builderName, EnumSet.of(Modifier.PUBLIC), args);
 
                 for (ArgumentAnnotatedField arg : required) {
                     writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
@@ -642,13 +649,13 @@ public class ArgProcessor extends AbstractProcessor {
 
                 if (!required.isEmpty()) {
                     jw.emitEmptyLine();
-                    writeNewFragmentWithRequiredMethod(builder, fragmentClass, jw, args);
+                    writeNewFragmentWithRequiredMethod(builderName, fragmentClass, jw, args);
                 }
 
                 Set<ArgumentAnnotatedField> optionalArguments = fragment.getOptionalFields();
 
                 for (ArgumentAnnotatedField arg : optionalArguments) {
-                    writeBuilderMethod(builder, jw, arg);
+                    writeBuilderMethod(builderName, jw, arg);
                 }
 
                 jw.emitEmptyLine();

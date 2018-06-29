@@ -121,6 +121,41 @@ public class AnnotatedFragment {
     return classElement.getSimpleName().toString();
   }
 
+  /*
+   * Returns the Builder name
+   * e.g. LoginFragmentBuilder or LoginActivity$$LoginFragment
+   */
+  public String getBuilderName() {
+    String builderName = getSimpleName() + "Builder";
+
+    if(isInnerClass()) {
+      return classElement.getEnclosingElement().getSimpleName() + "$$" + builderName;
+
+    } else {
+      return builderName;
+    }
+  }
+
+  /**
+   * Returns the qualified Builder name
+   * e.g. com.hannesdorfman.package.LoginFragmentBuilder or com.hannesdorfman.package.LoginActivity$$LoginFragment
+   */
+  public String getQualifiedBuilderName() {
+    String qualifiedBuildername = getQualifiedName() + "Builder";
+
+    if(isInnerClass()) {
+      return qualifiedBuildername
+              .replace("." + getSimpleName(), "$$" + getSimpleName());
+
+    } else {
+      return qualifiedBuildername;
+    }
+  }
+
+  public boolean isInnerClass() {
+    return classElement.getEnclosingElement().getKind() == ElementKind.CLASS;
+  }
+
   public Set<ArgumentAnnotatedField> getAll() {
     Set<ArgumentAnnotatedField> all = new HashSet<ArgumentAnnotatedField>(getRequiredFields());
     all.addAll(getOptionalFields());
@@ -227,6 +262,5 @@ public class AnnotatedFragment {
     return parameter.asType().equals(field.getElement().asType());
 
   }
-
 
 }
