@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -614,7 +615,7 @@ public class ArgProcessor extends AbstractProcessor {
                     jw.emitAnnotation(builderAnnotation);
                 }
 
-                jw.beginType(builderName, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+                jw.beginType(builderName + fragment.getTypeParametersString(), "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
 
                 if (!fragment.getBundlerVariableMap().isEmpty()) {
                     jw.emitEmptyLine();
@@ -649,7 +650,7 @@ public class ArgProcessor extends AbstractProcessor {
 
                 if (!required.isEmpty()) {
                     jw.emitEmptyLine();
-                    writeNewFragmentWithRequiredMethod(builderName, fragmentClass, jw, args);
+                    writeNewFragmentWithRequiredMethod(builderName, fragment, jw, args);
                 }
 
                 Set<ArgumentAnnotatedField> optionalArguments = fragment.getOptionalFields();
@@ -831,11 +832,11 @@ public class ArgProcessor extends AbstractProcessor {
         }
     }
 
-    private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element,
+    private void writeNewFragmentWithRequiredMethod(String builder, AnnotatedFragment fragment,
                                                     JavaWriter jw, String[] args) throws IOException {
 
         if (supportAnnotations) jw.emitAnnotation("NonNull");
-        jw.beginMethod(element.getQualifiedName().toString(), "new" + element.getSimpleName(),
+        jw.beginMethod(fragment.getTypeParametersString() + fragment.getQualifiedName(), "new" + fragment.getSimpleName(),
                 EnumSet.of(Modifier.STATIC, Modifier.PUBLIC), args);
         StringBuilder argNames = new StringBuilder();
         for (int i = 1; i < args.length; i += 2) {
@@ -868,7 +869,7 @@ public class ArgProcessor extends AbstractProcessor {
         String fragmentType = supportAnnotations ? "@NonNull " + element.getSimpleName().toString()
                 : element.getSimpleName().toString();
 
-        jw.beginMethod("void", "injectArguments",
+        jw.beginMethod(fragment.getTypeParametersString() +  "void", "injectArguments",
                 EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC),
                 fragmentType, "fragment");
 
