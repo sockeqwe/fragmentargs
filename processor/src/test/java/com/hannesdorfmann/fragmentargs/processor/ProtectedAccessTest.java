@@ -8,25 +8,23 @@ import static com.google.common.truth.Truth.assert_;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 
 public class ProtectedAccessTest {
-
-    private static final String[] PROCESSOR_OPTIONS
-            = new String[]{"-AfragmentArgsSupportAnnotations=false"};
-
     @Test
     public void protectedField() {
         assert_().about(javaSource())
                 .that(JavaFileObjects.forResource("ClassWithProtectedField.java"))
-                .withCompilerOptions(PROCESSOR_OPTIONS)
                 .processedWith(new ArgProcessor())
-                .compilesWithoutError();
+                .compilesWithoutError()
+                .and()
+                .generatesSources(JavaFileObjects.forResource("ClassWithProtectedFieldBuilder.java"));
     }
 
     @Test
     public void protectedSetter() {
         assert_().about(javaSource())
                 .that(JavaFileObjects.forResource("ClassWithProtectedSetter.java"))
-                .withCompilerOptions(PROCESSOR_OPTIONS)
                 .processedWith(new ArgProcessor())
-                .compilesWithoutError();
+                .compilesWithoutError()
+                .and()
+                .generatesSources(JavaFileObjects.forResource("ClassWithProtectedSetterBuilder.java"));
     }
 }
