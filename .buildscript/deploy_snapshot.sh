@@ -6,7 +6,7 @@
 # http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci/
 
 SLUG="sockeqwe/fragmentargs"
-JDK="oraclejdk7"
+JDK="oraclejdk8"
 BRANCH="master"
 
 set -e
