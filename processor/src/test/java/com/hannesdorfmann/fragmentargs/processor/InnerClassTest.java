@@ -10,4 +10,9 @@ public class InnerClassTest {
     public void innerClass() {
         assertClassCompilesWithoutError("ClassWithInnerClass.java");
     }
+
+    @Test
+    public void innerClassWithProtectedField() {
+        assertClassCompilesWithoutError("InnerClassWithProtectedField.java");
+    }
 }

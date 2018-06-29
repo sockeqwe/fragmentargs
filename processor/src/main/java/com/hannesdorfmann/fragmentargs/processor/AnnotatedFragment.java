@@ -141,14 +141,14 @@ public class AnnotatedFragment {
    * e.g. com.hannesdorfman.package.LoginFragmentBuilder or com.hannesdorfman.package.LoginActivity$$LoginFragment
    */
   public String getQualifiedBuilderName() {
-    String qualifiedBuildername = getQualifiedName() + "Builder";
+    String qualifiedBuilderName = getQualifiedName() + "Builder";
 
     if(isInnerClass()) {
-      return qualifiedBuildername
-              .replace("." + getSimpleName(), "$$" + getSimpleName());
+      return qualifiedBuilderName
+              .replace("." + getSimpleName() + "Builder", "$$" + getSimpleName() + "Builder");
 
     } else {
-      return qualifiedBuildername;
+      return qualifiedBuilderName;
     }
   }
 
