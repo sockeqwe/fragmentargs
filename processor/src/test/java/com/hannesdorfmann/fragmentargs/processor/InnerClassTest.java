@@ -8,11 +8,11 @@ public class InnerClassTest {
 
     @Test
     public void innerClass() {
-        assertClassCompilesWithoutError("ClassWithInnerClass.java");
+        assertClassCompilesWithoutError("ClassWithInnerClass.java", "ClassWithInnerClassBuilder.java");
     }
 
     @Test
     public void innerClassWithProtectedField() {
-        assertClassCompilesWithoutError("InnerClassWithProtectedField.java");
+        assertClassCompilesWithoutError("InnerClassWithProtectedField.java", "InnerClassWithProtectedFieldBuilder.java");
     }
 }

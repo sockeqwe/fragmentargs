@@ -7,15 +7,13 @@ import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 
 public final class CompileTest {
 
-    private static final String[] PROCESSOR_OPTIONS
-            = new String[]{"-AfragmentArgsSupportAnnotations=false"};
-
-    public static void assertClassCompilesWithoutError(final String classResourceName) {
+    public static void assertClassCompilesWithoutError(final String classResourceName, final String outputClassResourceName) {
         assert_().about(javaSource())
                 .that(JavaFileObjects.forResource(classResourceName))
-                .withCompilerOptions(PROCESSOR_OPTIONS)
                 .processedWith(new ArgProcessor())
-                .compilesWithoutError();
+                .compilesWithoutError()
+                .and()
+                .generatesSources(JavaFileObjects.forResource(outputClassResourceName));
     }
 
 }
