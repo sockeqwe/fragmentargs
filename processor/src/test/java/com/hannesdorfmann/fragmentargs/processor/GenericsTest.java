@@ -11,4 +11,13 @@ public class GenericsTest {
         assertClassCompilesWithoutError("ClassWithGenerics.java", "ClassWithGenericsBuilder.java");
     }
 
+    @Test
+    public void classWithGenericsAndInnerClass() {
+        assertClassCompilesWithoutError("ClassWithGenericsAndInnerClass.java", "ClassWithGenericsBuilder.java");
+    }
+
+    @Test
+    public void classWithGenericsInnerClass() {
+        assertClassCompilesWithoutError("ClassWithGenericsInnerClass.java", "ClassWithGenericsInnerClass$$InnerClassBuilder.java");
+    }
 }
