@@ -35,7 +35,7 @@
 
         <!-- Test Dependencies -->
         <junit.version>4.10</junit.version>
-        <compile-testing.version>0.5</compile-testing.version>
+        <compile-testing.version>0.15</compile-testing.version>
         <truth.version>0.13</truth.version>
     </properties>
 
