@@ -1,25 +1,26 @@
 package com.hannesdorfmann.fragmentargs.processor.test;
 
 import android.os.Bundle;
+import com.hannesdorfmann.fragmentargs.processor.test.ClassWithInnerClass.InnerClass;
 
-public final class ClassWithInnerClassBuilder {
+public final class ClassWithInnerClass$$InnerClassBuilder {
 
     private final Bundle mArguments = new Bundle();
 
-    public ClassWithInnerClassBuilder(String arg) {
+    public ClassWithInnerClass$$InnerClassBuilder(String arg) {
 
         mArguments.putString("arg", arg);
     }
 
-    public static ClassWithInnerClass newClassWithInnerClass(String arg) {
-        return new ClassWithInnerClassBuilder(arg).build();
+    public static InnerClass newInnerClass(String arg) {
+        return new ClassWithInnerClass$$InnerClassBuilder(arg).build();
     }
 
     public Bundle buildBundle() {
         return new Bundle(mArguments);
     }
 
-    public static final void injectArguments(ClassWithInnerClass fragment) {
+    public static final void injectArguments(InnerClass fragment) {
         Bundle args = fragment.getArguments();
         if (args == null) {
             throw new IllegalStateException("No arguments set. Have you set up this Fragment with the corresponding FragmentArgs Builder? ");
@@ -31,8 +32,8 @@ public final class ClassWithInnerClassBuilder {
         fragment.arg = args.getString("arg");
     }
 
-    public ClassWithInnerClass build() {
-        ClassWithInnerClass fragment = new ClassWithInnerClass();
+    public InnerClass build() {
+        InnerClass fragment = new InnerClass();
         fragment.setArguments(mArguments);
         return fragment;
     }

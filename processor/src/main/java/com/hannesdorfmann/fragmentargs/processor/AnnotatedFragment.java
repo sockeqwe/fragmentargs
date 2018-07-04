@@ -1,8 +1,10 @@
 package com.hannesdorfmann.fragmentargs.processor;
 
 import com.hannesdorfmann.fragmentargs.annotation.Arg;
+
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +13,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Simple data holder class for fragment args of a certain fragment
@@ -154,6 +158,49 @@ public class AnnotatedFragment {
 
   public boolean isInnerClass() {
     return classElement.getEnclosingElement().getKind() == ElementKind.CLASS;
+  }
+
+  /**
+   * Builds a type parameter string
+   * e.g. {@literal <V extends Serializable & Parcelable, H extends Object>}
+   */
+  public String getTypeParametersString() {
+    StringBuilder parametersBuilder = new StringBuilder();
+    Iterator<? extends TypeParameterElement> typeParametersIterator = classElement.getTypeParameters().iterator();
+
+    if(typeParametersIterator.hasNext()) {
+      parametersBuilder.append("<");
+
+      while(typeParametersIterator.hasNext()) {
+        TypeParameterElement parameterElement = typeParametersIterator.next();
+
+        // e.g. "V"
+        parametersBuilder.append(parameterElement.getSimpleName());
+
+        Iterator<? extends TypeMirror> boundsIterator = parameterElement.getBounds().iterator();
+
+        if(boundsIterator.hasNext()) {
+          parametersBuilder.append(" extends ");
+
+          while (boundsIterator.hasNext()) {
+            TypeMirror typeMirror = boundsIterator.next();
+            parametersBuilder.append(typeMirror.toString());
+
+            if(boundsIterator.hasNext()){
+              parametersBuilder.append(" & ");
+            }
+          }
+        }
+
+        if(typeParametersIterator.hasNext()) {
+          parametersBuilder.append(", ");
+        }
+      }
+
+      parametersBuilder.append(">");
+    }
+
+    return parametersBuilder.toString();
   }
 
   public Set<ArgumentAnnotatedField> getAll() {
