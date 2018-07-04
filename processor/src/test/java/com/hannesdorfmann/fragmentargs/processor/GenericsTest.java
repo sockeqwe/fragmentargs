@@ -7,7 +7,8 @@ import static com.hannesdorfmann.fragmentargs.processor.CompileTest.assertClassC
 public class GenericsTest {
 
     @Test
-    public void protectedField() {
+    public void classWithGenerics() {
         assertClassCompilesWithoutError("ClassWithGenerics.java", "ClassWithGenericsBuilder.java");
     }
+
 }

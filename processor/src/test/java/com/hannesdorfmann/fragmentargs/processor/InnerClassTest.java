@@ -8,7 +8,7 @@ public class InnerClassTest {
 
     @Test
     public void innerClass() {
-        assertClassCompilesWithoutError("ClassWithInnerClass.java", "ClassWithInnerClassBuilder.java");
+        assertClassCompilesWithoutError("ClassWithInnerClass.java", "ClassWithInnerClass$$InnerClassBuilder.java");
     }
 
     @Test
