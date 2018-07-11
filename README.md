@@ -418,6 +418,20 @@ apt {
   }
 }
 
+
+// Annotation processor
+android {
+....
+    defaultConfig {
+		....
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ fragmentArgsLib : 'true' ]
+                includeCompileClasspath true
+            }
+        }
+    }
+}
 // Kotlin Annotation processor
 kapt {
   generateStubs = true
