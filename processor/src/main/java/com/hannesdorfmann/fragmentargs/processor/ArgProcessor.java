@@ -41,6 +41,7 @@ import javax.tools.JavaFileObject;
 /**
  * This is the annotation processor for FragmentArgs
  *
+ * Is an aggregating processor, because we add more than one originating element for each builder file.
  * @author Hannes Dorfmann
  */
 public class ArgProcessor extends AbstractProcessor {
